@@ -14,7 +14,7 @@ const [, , chapter = "abertura", out = "qa", port = "3000", secs = "40"] = proce
   for (let t = 0; t < Number(secs); t += 1.5) {
     await p.waitForTimeout(1500);
     await p.screenshot({ path: `${out}/${String(Math.round(t * 10)).padStart(4, "0")}.png` });
-    const skip = p.getByText("Pular e ver um exemplo");
+    const skip = p.getByText(/^Pular e /);
     if (await skip.isVisible().catch(() => false)) await skip.click().catch(() => {});
   }
   console.log(errs.join("\n") || "sem erros no console");

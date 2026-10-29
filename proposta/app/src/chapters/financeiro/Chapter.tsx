@@ -247,10 +247,11 @@ export default function FinanceiroChapter({ onNext }: ChapterProps) {
           number="02"
           title="Financeiro"
           items={[
-            "Contas a pagar e a receber da clínica e dos cursos",
+            "Orçamentos (aprovados e não aprovados), contas a pagar, a receber e a enviar",
             "Leitura de comprovantes, boletos e recibos por foto",
             "Alertas no app antes de cada vencimento",
             "Conciliação com o extrato e relatórios mensais",
+            "Histórico financeiro migrado do SimplesVet",
           ]}
           phase="Fase 1"
           metric="Lançamentos digitados à mão por mês"

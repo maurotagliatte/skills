@@ -1,62 +1,93 @@
 import type { ChapterAgent } from "@/agent/protocol";
 
 /**
- * Prontuário equino por voz. Schema provisório (clínica geral + locomotor);
- * troca pelos modelos reais da Dra. Gabriela quando chegarem.
+ * Modelo "Exame Locomotor" da Dra. Gabriela Guenka (do documento que ela usa hoje no iPad):
+ * informações pessoais, animal, histórico, análise do casco, inspeção dinâmica, flexões,
+ * radiografia, ultrassonografia, resumo do exame, check-list e procedimentos.
  */
+export type Membro = "MTE" | "MTD" | "MPE" | "MPD";
+export type Flexao = { membro: Membro; articulacao: string; resultado: string };
+export type AchadoImagem = { estrutura: string; achado: string };
+
 export type Prontuario = {
-  paciente: { nome: string; raca: string; idade: string; sexo: string; pelagem: string; peso: string };
-  tutor: string;
-  queixa: string;
-  anamnese: string;
-  exameFisico: { fc: string; fr: string; temperatura: string; mucosas: string; tpc: string; hidratacao: string };
-  locomotor: { membro: string; grauAAEP: string; flexao: string; palpacao: string; bloqueios: string };
-  diagnostico: string;
-  conduta: { item: string; detalhe: string }[];
-  retorno: string;
-  tags: string[];
+  informacoes: { proprietario: string; documento: string; endereco: string; cep: string; propriedade: string; contato: string };
+  animal: { nome: string; raca: string; sexo: string; esporte: string; idade: string; pelagem: string };
+  historico: string;
+  analiseCasco: string;
+  inspecaoDinamica: string;
+  flexoes: Flexao[];
+  radiografia: { quantidade: string; achados: AchadoImagem[] };
+  ultrassonografia: AchadoImagem[];
+  resumo: string[];
+  checklist: { materiais: string[]; medicamentos: string[] };
+  procedimentos: string[];
 };
 
+/** Articulações das colunas da tabela de flexões (anteriores como no modelo; posteriores a confirmar). */
+export const ARTICULACOES = {
+  anteriores: ["ombro", "cotovelo", "carpo", "dígito"],
+  posteriores: ["quadril", "soldra", "jarrete", "dígito"],
+} as const;
+
 const str = { type: "string" };
+const strs = { type: "array", items: str };
+const achado = { type: "object", properties: { estrutura: str, achado: str }, required: ["estrutura", "achado"] };
 
 export const prontuarioAgent: ChapterAgent = {
   system: [
     "Você é a Donna, assistente clínica da Dra. Gabriela Guenka, médica veterinária de equinos especialista em biomecânica.",
-    "Recebe a transcrição de um áudio gravado durante um exame e estrutura um prontuário chamando a ferramenta registrar_prontuario.",
-    "Preencha só o que foi dito ou é inferência clínica óbvia; deixe string vazia quando não houver informação. Use unidades (bpm, mpm, °C, kg).",
-    "Grau de claudicação na escala AAEP (0–5). Português do Brasil, linguagem técnica e concisa.",
+    "Recebe a transcrição de um áudio gravado durante um exame locomotor e preenche o modelo de prontuário da clínica chamando a ferramenta registrar_prontuario.",
+    "Preencha só o que foi dito ou é inferência clínica óbvia; deixe string vazia ou lista vazia quando não houver informação.",
+    "Flexões: uma entrada por articulação testada, membro em MTE/MTD (torácicos) ou MPE/MPD (pélvicos); resultado curto como 'positiva +2/5' ou 'negativa'.",
+    "Resumo do exame: 2 a 4 tópicos objetivos. Português do Brasil, linguagem técnica e concisa.",
   ].join(" "),
   tools: [
     {
       name: "registrar_prontuario",
-      description: "Registra o prontuário estruturado do exame no sistema.",
+      description: "Preenche o modelo Exame Locomotor da clínica e salva no prontuário do paciente.",
       parameters: {
         type: "object",
         properties: {
-          paciente: {
+          informacoes: {
             type: "object",
-            properties: { nome: str, raca: str, idade: str, sexo: str, pelagem: str, peso: str },
-            required: ["nome", "raca", "idade", "sexo", "pelagem", "peso"],
+            properties: { proprietario: str, documento: { type: "string", description: "CPF/RG/CNPJ" }, endereco: str, cep: str, propriedade: str, contato: str },
+            required: ["proprietario", "documento", "endereco", "cep", "propriedade", "contato"],
           },
-          tutor: str,
-          queixa: str,
-          anamnese: str,
-          exameFisico: {
+          animal: {
             type: "object",
-            properties: { fc: str, fr: str, temperatura: str, mucosas: str, tpc: str, hidratacao: str },
-            required: ["fc", "fr", "temperatura", "mucosas", "tpc", "hidratacao"],
+            properties: { nome: str, raca: str, sexo: str, esporte: str, idade: str, pelagem: str },
+            required: ["nome", "raca", "sexo", "esporte", "idade", "pelagem"],
           },
-          locomotor: {
-            type: "object",
-            properties: { membro: str, grauAAEP: str, flexao: str, palpacao: str, bloqueios: str },
-            required: ["membro", "grauAAEP", "flexao", "palpacao", "bloqueios"],
+          historico: str,
+          analiseCasco: str,
+          inspecaoDinamica: str,
+          flexoes: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { membro: { type: "string", enum: ["MTE", "MTD", "MPE", "MPD"] }, articulacao: str, resultado: str },
+              required: ["membro", "articulacao", "resultado"],
+            },
           },
-          diagnostico: str,
-          conduta: { type: "array", items: { type: "object", properties: { item: str, detalhe: str }, required: ["item", "detalhe"] } },
-          retorno: str,
-          tags: { type: "array", items: str, description: "2 a 4 etiquetas curtas para busca" },
+          radiografia: { type: "object", properties: { quantidade: str, achados: { type: "array", items: achado } }, required: ["quantidade", "achados"] },
+          ultrassonografia: { type: "array", items: achado },
+          resumo: strs,
+          checklist: { type: "object", properties: { materiais: strs, medicamentos: strs }, required: ["materiais", "medicamentos"] },
+          procedimentos: strs,
         },
-        required: ["paciente", "tutor", "queixa", "anamnese", "exameFisico", "locomotor", "diagnostico", "conduta", "retorno", "tags"],
+        required: [
+          "informacoes",
+          "animal",
+          "historico",
+          "analiseCasco",
+          "inspecaoDinamica",
+          "flexoes",
+          "radiografia",
+          "ultrassonografia",
+          "resumo",
+          "checklist",
+          "procedimentos",
+        ],
       },
     },
   ],
@@ -64,38 +95,50 @@ export const prontuarioAgent: ChapterAgent = {
   demo: () => [
     { kind: "wait", ms: 500 },
     { kind: "tool", name: "registrar_prontuario", args: EXEMPLO_PRONTUARIO },
-    { kind: "text", text: "Prontuário salvo na ficha do Trovão. Marquei o retorno em 15 dias na agenda." },
+    { kind: "text", text: "Prontuário preenchido no seu modelo. Mandei para você conferir no WhatsApp antes de ir ao tutor." },
   ],
 };
 
 export const EXEMPLO_TRANSCRICAO =
-  "Paciente Trovão, Quarto de Milha, macho castrado, oito anos, alazão, uns quatrocentos e oitenta quilos. Tutor Ricardo Alves. " +
-  "Queixa de claudicação no posterior esquerdo há três semanas, piora depois do treino de tambor. " +
-  "Frequência cardíaca trinta e seis, respiratória doze, temperatura trinta e sete e oito, mucosas róseas, TPC dois segundos, hidratado. " +
-  "Claudicação grau três de cinco no posterior esquerdo, flexão de jarrete positiva, dor à palpação na região do tarso. " +
-  "Bloqueio intra-articular tarsometatarsiano com melhora de oitenta por cento. Suspeita de osteoartrite distal do tarso. " +
-  "Conduta: infiltração intra-articular com triancinolona, repouso com caminhada controlada quinze minutos por dia por duas semanas, " +
-  "fisioterapia com laser. Retorno em quinze dias para reavaliação e raio-x.";
+  "Exame locomotor do Trovão, Quarto de Milha, macho castrado, oito anos, alazão, atleta de tambor. Proprietário Ricardo Alves, Haras Santa Fé. " +
+  "Histórico: claudicação no posterior esquerdo há três semanas, piora depois do treino. " +
+  "Casco: aprumos corretos, sem sensibilidade à pinça, ferrageamento há trinta dias. " +
+  "Inspeção dinâmica: claudicação grau três de cinco no posterior esquerdo, mais evidente no círculo para a esquerda em piso duro. " +
+  "Flexões: jarrete posterior esquerdo positiva mais dois, soldra posterior esquerdo negativa, jarrete direito negativa, carpos negativos. " +
+  "Radiografia, quatro projeções do tarso esquerdo: proliferação óssea nas articulações intertársica distal e tarsometatarsiana. " +
+  "Ultrassom do ligamento suspensório sem alterações. " +
+  "Fiz bloqueio intra-articular tarsometatarsiano com melhora de oitenta por cento e infiltração com triancinolona. Usei mepivacaína e triancinolona, agulha 25 por 7.";
 
 export const EXEMPLO_PRONTUARIO: Prontuario = {
-  paciente: { nome: "Trovão", raca: "Quarto de Milha", idade: "8 anos", sexo: "Macho castrado", pelagem: "Alazão", peso: "480 kg" },
-  tutor: "Ricardo Alves",
-  queixa: "Claudicação em membro posterior esquerdo há 3 semanas, piora após treino de tambor.",
-  anamnese: "Atleta de tambor, treino 5×/semana. Sem histórico de trauma. Sem medicação prévia.",
-  exameFisico: { fc: "36 bpm", fr: "12 mpm", temperatura: "37,8 °C", mucosas: "Róseas", tpc: "2 s", hidratacao: "Hidratado" },
-  locomotor: {
-    membro: "Posterior esquerdo",
-    grauAAEP: "3/5",
-    flexao: "Flexão de jarrete positiva",
-    palpacao: "Dor à palpação em região de tarso",
-    bloqueios: "Intra-articular tarsometatarsiano: 80% de melhora",
+  informacoes: {
+    proprietario: "Ricardo Alves",
+    documento: "",
+    endereco: "",
+    cep: "",
+    propriedade: "Haras Santa Fé",
+    contato: "",
   },
-  diagnostico: "Suspeita de osteoartrite distal do tarso (esparavão ósseo).",
-  conduta: [
-    { item: "Infiltração intra-articular", detalhe: "Triancinolona, articulação tarsometatarsiana" },
-    { item: "Repouso controlado", detalhe: "Caminhada 15 min/dia por 2 semanas" },
-    { item: "Fisioterapia", detalhe: "Laserterapia em região de tarso" },
+  animal: { nome: "Trovão", raca: "Quarto de Milha", sexo: "Macho castrado", esporte: "Tambor", idade: "8 anos", pelagem: "Alazão" },
+  historico: "Claudicação em membro pélvico esquerdo há 3 semanas, piora após treino.",
+  analiseCasco: "Aprumos corretos. Sem sensibilidade à pinça de casco. Ferrageamento há 30 dias.",
+  inspecaoDinamica: "Claudicação 3/5 (AAEP) em MPE, mais evidente no círculo à esquerda em piso duro.",
+  flexoes: [
+    { membro: "MTE", articulacao: "carpo", resultado: "negativa" },
+    { membro: "MTD", articulacao: "carpo", resultado: "negativa" },
+    { membro: "MPE", articulacao: "soldra", resultado: "negativa" },
+    { membro: "MPE", articulacao: "jarrete", resultado: "positiva +2/5" },
+    { membro: "MPD", articulacao: "jarrete", resultado: "negativa" },
   ],
-  retorno: "15 dias — reavaliação e radiografia",
-  tags: ["claudicação", "tarso", "osteoartrite", "atleta de tambor"],
+  radiografia: {
+    quantidade: "4 projeções — tarso esquerdo",
+    achados: [{ estrutura: "Intertársica distal e tarsometatarsiana", achado: "Proliferação óssea periarticular" }],
+  },
+  ultrassonografia: [{ estrutura: "Ligamento suspensório (MPE)", achado: "Sem alterações" }],
+  resumo: [
+    "Claudicação 3/5 em MPE com flexão de jarrete positiva",
+    "Bloqueio tarsometatarsiano: 80% de melhora",
+    "Compatível com osteoartrite distal do tarso",
+  ],
+  checklist: { materiais: ["Agulha 25×7", "Luvas estéreis"], medicamentos: ["Mepivacaína", "Triancinolona"] },
+  procedimentos: ["Bloqueio intra-articular tarsometatarsiano", "Infiltração intra-articular com triancinolona"],
 };

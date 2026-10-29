@@ -10,6 +10,8 @@ import {
   IconFolder,
   IconBrandGoogleDrive,
   IconPlayerPlay,
+  IconFileTypeDoc,
+  IconBrandWhatsapp,
 } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
@@ -17,7 +19,7 @@ import type { ChapterProps, Phase } from "@/engine/types";
 import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, Chip } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { useRecorder } from "@/agent/useRecorder";
-import { Record, NAV, type Activity } from "./Record";
+import { Record, type Activity, type Status } from "./Record";
 import { EXEMPLO_TRANSCRICAO, type Prontuario } from "./agent";
 
 const W = 4200;
@@ -38,17 +40,20 @@ const SHOTS: Shot[] = [
 const LIVE_SHOT: Shot = frame(BOX.sistema, { region: "left", pad: 40, dur: 1.2 });
 
 const DRIVE_FILES = [
+  { icon: IconFileTypeDoc, name: "Copy of Copy of Copy of Exame Locomotor.docx", note: "modelo de 7 páginas" },
   { icon: IconPhoto, name: "IMG_2041.HEIC", note: "foto do iPad · sem paciente" },
   { icon: IconFileTypePdf, name: "Prontuario_Trovao_final_v3.pdf", note: "editado há 2 meses" },
   { icon: IconFileTypePdf, name: "exame tarso (1).pdf", note: "duplicado" },
-  { icon: IconPhoto, name: "Screenshot 2026-09-14.png", note: "?" },
   { icon: IconFolder, name: "Pacientes 2024 - NÃO MEXER", note: "312 itens" },
   { icon: IconFileTypePdf, name: "Prontuário Estrela Dalva.pdf", note: "manuscrito" },
 ];
 
 export default function ProntuarioChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
-  const [phase, setPhase] = useState<Phase>("scene");
+  // "aprovar": segunda pausa, a conferência pelo WhatsApp (status pedido pela Dra.)
+  const [phase, setPhase] = useState<Phase | "aprovar">("scene");
+  const [status, setStatus] = useState<Status>("rascunho");
+  const conferido = useRef(false);
   const [cue, setCue] = useState("antes");
   const [transcript, setTranscript] = useState<{ text: string; example: boolean } | null>(null);
   const agent = useAgent();
@@ -59,14 +64,25 @@ export default function ProntuarioChapter({ onNext }: ChapterProps) {
 
   const activity: Activity = [];
   if (transcript) activity.push({ label: transcript.example ? "Usando o áudio de exemplo" : "Áudio transcrito", done: true });
-  if (call) activity.push({ label: call.done ? "Prontuário estruturado e salvo" : "Estruturando o prontuário…", done: call.done });
+  if (call) activity.push({ label: call.done ? "Modelo Exame Locomotor preenchido" : "Preenchendo o seu modelo…", done: call.done });
+  if (status !== "rascunho") activity.push({ label: "Relatório enviado para sua conferência", done: true });
+  if (status === "aprovado") activity.push({ label: "Relatório enviado ao tutor", done: true });
 
   useEffect(() => {
-    if (phase === "live" && agent.run.status === "done") {
-      const t = setTimeout(() => setPhase("scope"), 2200);
-      return () => clearTimeout(t);
+    // só na primeira conclusão: depois de aprovar, o fluxo não volta para a conferência
+    if (phase === "live" && agent.run.status === "done" && !conferido.current) {
+      conferido.current = true;
+      // sem cleanup: a troca de status re-renderiza e não pode cancelar a próxima etapa
+      setTimeout(() => setStatus("conferencia"), 1400);
+      setTimeout(() => setPhase("aprovar"), 2600);
     }
   }, [phase, agent.run.status]);
+
+  const aprovar = () => {
+    setStatus("aprovado");
+    setPhase("live");
+    setTimeout(() => setPhase("scope"), 2400);
+  };
 
   const toPause = async () => {
     setPhase("pause");
@@ -93,8 +109,8 @@ export default function ProntuarioChapter({ onNext }: ChapterProps) {
           x={140}
           y={170}
           eyebrow="01 · Prontuário"
-          title={"Hoje, o exame termina\nnuma pasta do Drive."}
-          sub="Anotações à mão no iPad, fotos soltas, PDFs duplicados. Quando precisa achar um caso, começa a busca."
+          title={"Hoje, o exame vive num\nWord de 7 páginas."}
+          sub="O modelo é preenchido à mão no iPad, salvo no Drive, e o SimplesVet fica ao lado. Quando precisa achar um caso, começa a busca."
         />
         <Backdrop photo="icm-areia" x={140} y={640} w={1180} h={720}>
           <AppWindow nav={[]} showSidebar={false} workspace="Meu Drive">
@@ -129,20 +145,25 @@ export default function ProntuarioChapter({ onNext }: ChapterProps) {
           y={300}
           w={520}
           title={"Grava enquanto\nexamina."}
-          sub="No app, um toque. A Donna escuta, transcreve e organiza — sem tirar a mão do cavalo."
+          sub="No app, um toque. A Donna escuta e preenche o seu modelo de exame locomotor — sem tirar a mão do cavalo."
           show={cue !== "antes"}
         />
 
         {/* 3 · No sistema */}
         <Backdrop photo="icm-oliva" x={2760} y={300} w={1180} h={900} inset="5% 4% -2% 4%">
-          <Record p={phase === "scene" || phase === "pause" ? {} : p} activity={activity} recording={mic.state === "recording" ? `Gravando · ${mic.seconds}s` : undefined} />
+          <Record
+            p={phase === "scene" || phase === "pause" ? {} : p}
+            activity={activity}
+            status={status}
+            recording={mic.state === "recording" ? `Gravando · ${mic.seconds}s` : undefined}
+          />
         </Backdrop>
       </Stage>
 
       <Overlay show={phase === "pause"}>
         <PauseCard step="grave um exame" title="Descreva um exame em voz alta, como faria no haras." onSkip={() => submit(undefined)}>
           <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
-            Fale o paciente, a queixa, os parâmetros e a conduta. Uns 30 segundos bastam. O áudio é processado e descartado.
+            Fale como no seu modelo: animal, histórico, casco, inspeção dinâmica, flexões, imagem e procedimentos. Uns 30 segundos bastam. O áudio é processado e descartado.
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Button icon={mic.state === "recording" ? IconPlayerStopFilled : IconMicrophone} onClick={onRecord}>
@@ -169,15 +190,27 @@ export default function ProntuarioChapter({ onNext }: ChapterProps) {
         </div>
       </Overlay>
 
+      <Overlay show={phase === "aprovar"}>
+        <PauseCard step="confira o relatório" title="O relatório chegou no seu WhatsApp para conferência." onSkip={aprovar} skipLabel="Pular e aprovar o exemplo">
+          <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
+            Status “Em conferência”: nada vai ao cliente antes do seu ok. Ao aprovar, o relatório segue direto para o WhatsApp do tutor.
+          </p>
+          <Button icon={IconBrandWhatsapp} onClick={aprovar}>
+            Aprovar e enviar ao tutor
+          </Button>
+        </PauseCard>
+      </Overlay>
+
       <Overlay show={phase === "scope"}>
         <ScopeCard
           number="01"
-          title="Prontuário por voz"
+          title="Prontuário e relatórios"
           items={[
-            "App mobile (iOS/Android) para gravar durante o exame",
-            "Agente que transcreve e estrutura no modelo da clínica",
-            "Ficha do paciente com histórico, etiquetas e retorno na agenda",
-            "Importação dos prontuários antigos do Google Drive",
+            "App mobile para gravar durante o exame",
+            "Seu modelo Exame Locomotor preenchido pela Donna",
+            "Modelos de atendimento, internação, laudo de imagem (RX/US) e alta",
+            "Status: em conferência no seu WhatsApp → aprovado → cliente",
+            "Migração dos dados do SimplesVet e do Drive",
           ]}
           phase="Fase 1"
           metric="Tempo de registro por exame"

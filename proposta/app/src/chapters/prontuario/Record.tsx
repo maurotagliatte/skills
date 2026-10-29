@@ -9,16 +9,13 @@ import {
   IconStethoscope,
   IconUsers,
   IconFiles,
-  IconUser,
-  IconScale,
-  IconPalette,
-  IconGenderBigender,
-  IconTag,
   IconMicrophone,
   IconCheck,
+  IconBrandWhatsapp,
+  IconFileDescription,
 } from "@tabler/icons-react";
-import { AppWindow, Chip, Prop, AgentRow, type NavEntry } from "@/kit";
-import type { Prontuario } from "./agent";
+import { AppWindow, Chip, AgentRow, type NavEntry } from "@/kit";
+import { ARTICULACOES, type Membro, type Prontuario } from "./agent";
 
 /** args parciais: chegam aos poucos via TOOL_CALL_ARGS */
 type P = Partial<Prontuario>;
@@ -28,8 +25,9 @@ export const NAV: NavEntry[] = [
   { icon: IconCalendarEvent, label: "Agenda" },
   { section: "Clínica" },
   { icon: IconStethoscope, label: "Prontuários", active: true },
+  { icon: IconFileDescription, label: "Relatórios" },
   { icon: IconHorse, label: "Pacientes" },
-  { icon: IconUsers, label: "Tutores" },
+  { icon: IconUsers, label: "Clientes" },
   { section: "Gestão" },
   { icon: IconCash, label: "Financeiro" },
   { icon: IconFiles, label: "Documentos" },
@@ -52,56 +50,159 @@ function V({ v, w = 120 }: { v?: string; w?: number }) {
         <motion.span
           key="s"
           exit={{ opacity: 0 }}
-          style={{ display: "inline-block", width: w, height: 10, borderRadius: 4, background: "#eef0f0", verticalAlign: "middle" }}
+          style={{ display: "inline-block", width: w, height: 9, borderRadius: 4, background: "#eef0f0", verticalAlign: "middle" }}
         />
       )}
     </AnimatePresence>
   );
 }
 
+/** Título de seção no estilo do modelo dela (etiqueta em pílula). */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ padding: "14px 0", borderTop: "1px solid var(--border)" }}>
-      <div style={{ fontSize: 11, color: "var(--text-3)", marginBottom: 8, fontWeight: 500 }}>{title}</div>
-      {children}
+    <div style={{ marginBottom: 12 }}>
+      <span style={{ display: "inline-block", fontSize: 11, fontWeight: 600, color: "var(--gg-wine)", background: "#f5ebe9", borderRadius: 99, padding: "2px 9px", marginBottom: 6 }}>
+        {title}
+      </span>
+      <div style={{ color: "var(--text-1)", lineHeight: 1.45 }}>{children}</div>
+    </div>
+  );
+}
+
+function Bullets({ items, w = 200 }: { items?: string[]; w?: number }) {
+  const list = items?.filter(Boolean) ?? [];
+  if (!list.length) return <V w={w} />;
+  return (
+    <ul style={{ margin: 0, paddingLeft: 16, display: "grid", gap: 2 }}>
+      {list.map((i) => (
+        <motion.li key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {i}
+        </motion.li>
+      ))}
+    </ul>
+  );
+}
+
+function FlexoesTable({ p }: { p: P }) {
+  const find = (m: Membro, a: string) => p.flexoes?.find((f) => f?.membro === m && f?.articulacao === a)?.resultado;
+  const grid = (membros: Membro[], cols: readonly string[]) => (
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 6 }}>
+      <thead>
+        <tr>
+          <th style={{ width: 40 }} />
+          {cols.map((c) => (
+            <th key={c} style={{ fontWeight: 500, color: "var(--text-3)", textAlign: "left", padding: "3px 6px", borderBottom: "1px solid var(--border)" }}>
+              {c}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {membros.map((m) => (
+          <tr key={m}>
+            <td className="mono" style={{ fontSize: 11, color: "var(--text-2)", padding: "4px 0" }}>
+              {m}
+            </td>
+            {cols.map((c) => {
+              const r = find(m, c);
+              return (
+                <td key={c} style={{ padding: "4px 6px", borderBottom: "1px solid var(--border)", color: r?.startsWith("positiva") ? "var(--k-red)" : "var(--text-1)", fontWeight: r?.startsWith("positiva") ? 600 : 400 }}>
+                  {r ? <V v={r} /> : <span style={{ color: "var(--text-3)" }}>—</span>}
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+  return (
+    <>
+      {grid(["MTE", "MTD"], ARTICULACOES.anteriores)}
+      {grid(["MPE", "MPD"], ARTICULACOES.posteriores)}
+    </>
+  );
+}
+
+function Achados({ items }: { items?: { estrutura: string; achado: string }[] }) {
+  const list = items?.filter((i) => i?.estrutura) ?? [];
+  if (!list.length) return <V w={220} />;
+  return (
+    <div style={{ display: "grid", gap: 3 }}>
+      {list.map((i) => (
+        <div key={i.estrutura} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12 }}>
+          <span style={{ color: "var(--text-2)" }}>{i.estrutura}</span>
+          <V v={i.achado} />
+        </div>
+      ))}
     </div>
   );
 }
 
 export type Activity = { label: string; done: boolean }[];
 
-export function Record({ p, activity, recording }: { p: P; activity: Activity; recording?: string }) {
-  const pac: Partial<Prontuario["paciente"]> = p.paciente ?? {};
-  const ef: Partial<Prontuario["exameFisico"]> = p.exameFisico ?? {};
-  const lo: Partial<Prontuario["locomotor"]> = p.locomotor ?? {};
+/** Fluxo de status pedido pela Dra.: em andamento → conferência no WhatsApp → aprovado → enviado ao cliente. */
+export type Status = "rascunho" | "conferencia" | "aprovado";
+
+const STATUS_STEPS: { id: Status; label: string; detail: string }[] = [
+  { id: "rascunho", label: "Em andamento", detail: "A Donna preenche o modelo" },
+  { id: "conferencia", label: "Em conferência", detail: "Vai para o seu WhatsApp" },
+  { id: "aprovado", label: "Aprovado", detail: "Segue direto para o WhatsApp do cliente" },
+];
+
+function StatusFlow({ status }: { status: Status }) {
+  const idx = STATUS_STEPS.findIndex((s) => s.id === status);
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      {STATUS_STEPS.map((s, i) => {
+        const on = i <= idx;
+        return (
+          <div key={s.id} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <motion.span
+              animate={{ background: on ? (i === 2 ? "var(--green)" : "var(--k-red)") : "#e7e8e9", scale: i === idx ? [1, 1.25, 1] : 1 }}
+              transition={{ duration: 0.5 }}
+              style={{ marginTop: 3, width: 10, height: 10, borderRadius: 99, flex: "none" }}
+            />
+            <div>
+              <div style={{ fontWeight: 500, color: on ? "var(--text-1)" : "var(--text-3)" }}>{s.label}</div>
+              <div style={{ fontSize: 12, color: "var(--text-3)" }}>{s.detail}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function Record({ p, activity, recording, status }: { p: P; activity: Activity; recording?: string; status: Status }) {
+  const inf: Partial<Prontuario["informacoes"]> = p.informacoes ?? {};
+  const an: Partial<Prontuario["animal"]> = p.animal ?? {};
+  const rx: Partial<Prontuario["radiografia"]> = p.radiografia ?? {};
+  const ck: Partial<Prontuario["checklist"]> = p.checklist ?? {};
+
   const aside = (
-    <div style={{ padding: 16, display: "grid", gap: 2 }}>
-      <div style={{ fontWeight: 600, marginBottom: 8 }}>Propriedades</div>
-      <Prop icon={IconUser} label="Tutor">
-        <V v={p.tutor} w={90} />
-      </Prop>
-      <Prop icon={IconGenderBigender} label="Sexo">
-        <V v={pac.sexo} w={90} />
-      </Prop>
-      <Prop icon={IconPalette} label="Pelagem">
-        <V v={pac.pelagem} w={60} />
-      </Prop>
-      <Prop icon={IconScale} label="Peso">
-        <V v={pac.peso} w={50} />
-      </Prop>
-      <Prop icon={IconCalendarEvent} label="Retorno">
-        <V v={p.retorno} w={110} />
-      </Prop>
-      <Prop icon={IconTag} label="Etiquetas">
-        <span style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {(p.tags ?? []).filter(Boolean).map((t) => (
-            <Chip key={t} tone="violet">
-              {t}
-            </Chip>
-          ))}
-          {!p.tags?.length && <V w={80} />}
-        </span>
-      </Prop>
+    <div style={{ padding: 16 }}>
+      <div style={{ fontWeight: 600, marginBottom: 10 }}>Status do relatório</div>
+      <StatusFlow status={status} />
+      <AnimatePresence>
+        {status !== "rascunho" && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ marginTop: 14, padding: 10, borderRadius: 10, background: "#eef8f1", border: "1px solid #cfe9d8", fontSize: 12 }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 600, color: "#146136", marginBottom: 4 }}>
+              <IconBrandWhatsapp size={14} />
+              {status === "aprovado" ? "Enviado a Ricardo Alves" : "Enviado a Dra. Gabriela"}
+            </div>
+            <div style={{ color: "var(--text-2)" }}>
+              {status === "aprovado"
+                ? "Relatório de atendimento do Trovão em PDF, com o resumo e as orientações."
+                : "Relatório do Trovão pronto para conferir. Responda “ok” para aprovar ou edite no app."}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>Atividade</div>
         {recording && (
@@ -121,87 +222,78 @@ export function Record({ p, activity, recording }: { p: P; activity: Activity; r
 
   return (
     <AppWindow nav={NAV} aside={aside}>
-      <div style={{ padding: "18px 26px", height: "100%", overflow: "hidden" }}>
-        <div style={{ color: "var(--text-3)", fontSize: 12, marginBottom: 10 }}>Prontuários › {pac.nome || "Novo exame"}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <span className="display" style={{ fontSize: 26 }}>
-            <V v={pac.nome ? `${pac.nome}` : undefined} w={160} />
+      <div style={{ padding: "16px 22px", height: "100%", overflow: "hidden", fontSize: 12.5 }}>
+        <div style={{ color: "var(--text-3)", fontSize: 12, marginBottom: 8 }}>Prontuários › Exame locomotor › {an.nome || "Novo exame"}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <span className="display" style={{ fontSize: 24 }}>
+            <V v={an.nome} w={150} />
           </span>
-          {p.tags?.length ? (
+          {p.procedimentos?.length ? (
             <Chip tone="green" icon={IconCheck}>
-              Estruturado pela Donna
+              Preenchido pela Donna
             </Chip>
           ) : null}
         </div>
-        <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
-          <Chip>
-            <V v={pac.raca} w={70} />
-          </Chip>
-          <Chip>
-            <V v={pac.idade} w={40} />
-          </Chip>
-          <Chip tone="red">
-            <V v={lo.membro ? `Claudicação ${lo.grauAAEP ?? ""}`.trim() : undefined} w={70} />
-          </Chip>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+          {(["raca", "sexo", "esporte", "idade", "pelagem"] as const).map((k) => (
+            <Chip key={k}>
+              <V v={an[k]} w={46} />
+            </Chip>
+          ))}
         </div>
-        <Section title="Queixa principal">
-          <V v={p.queixa} w={420} />
-        </Section>
-        <Section title="Exame físico">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
-            {(
-              [
-                ["FC", ef.fc],
-                ["FR", ef.fr],
-                ["Temp.", ef.temperatura],
-                ["Mucosas", ef.mucosas],
-                ["TPC", ef.tpc],
-                ["Hidratação", ef.hidratacao],
-              ] as const
-            ).map(([k, v]) => (
-              <div key={k} style={{ border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px" }}>
-                <div style={{ fontSize: 11, color: "var(--text-3)" }}>{k}</div>
-                <div style={{ fontWeight: 500, marginTop: 2 }}>
-                  <V v={v} w={44} />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
+          <div>
+            <Section title="Informações pessoais">
+              <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", rowGap: 2 }}>
+                <span style={{ color: "var(--text-3)" }}>Proprietário</span>
+                <V v={inf.proprietario} w={110} />
+                <span style={{ color: "var(--text-3)" }}>Propriedade</span>
+                <V v={inf.propriedade} w={110} />
+                <span style={{ color: "var(--text-3)" }}>CPF/RG/CNPJ</span>
+                <span style={{ color: "var(--text-3)" }}>{inf.documento || "do cadastro do cliente"}</span>
+              </div>
+            </Section>
+            <Section title="Histórico">
+              <V v={p.historico} w={240} />
+            </Section>
+            <Section title="Análise do casco">
+              <V v={p.analiseCasco} w={240} />
+            </Section>
+            <Section title="Inspeção dinâmica">
+              <V v={p.inspecaoDinamica} w={240} />
+            </Section>
+            <Section title="Resumo do exame">
+              <Bullets items={p.resumo} w={220} />
+            </Section>
+          </div>
+          <div>
+            <Section title="Flexões">
+              <FlexoesTable p={p} />
+            </Section>
+            <Section title={`Radiografia${rx.quantidade ? ` · ${rx.quantidade}` : ""}`}>
+              <Achados items={rx.achados} />
+            </Section>
+            <Section title="Ultrassonografia">
+              <Achados items={p.ultrassonografia} />
+            </Section>
+            <Section title="Procedimentos">
+              <Bullets items={p.procedimentos} w={200} />
+            </Section>
+            <Section title="Check-list">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12 }}>
+                <div>
+                  <div style={{ color: "var(--text-3)" }}>materiais</div>
+                  <Bullets items={ck.materiais} w={80} />
+                </div>
+                <div>
+                  <div style={{ color: "var(--text-3)" }}>medicamentos</div>
+                  <Bullets items={ck.medicamentos} w={80} />
                 </div>
               </div>
-            ))}
+            </Section>
           </div>
-        </Section>
-        <Section title="Exame locomotor">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 24px" }}>
-            <span>
-              <b style={{ fontWeight: 500 }}>Flexão: </b>
-              <V v={lo.flexao} w={160} />
-            </span>
-            <span>
-              <b style={{ fontWeight: 500 }}>Palpação: </b>
-              <V v={lo.palpacao} w={160} />
-            </span>
-            <span style={{ gridColumn: "1 / -1" }}>
-              <b style={{ fontWeight: 500 }}>Bloqueios: </b>
-              <V v={lo.bloqueios} w={260} />
-            </span>
-          </div>
-        </Section>
-        <Section title="Diagnóstico presuntivo">
-          <V v={p.diagnostico} w={360} />
-        </Section>
-        <Section title="Conduta">
-          <div style={{ display: "grid", gap: 6 }}>
-            {(p.conduta?.length ? p.conduta : [undefined, undefined]).map((c, i) => (
-              <div key={i} style={{ display: "flex", gap: 8 }}>
-                <span style={{ color: "var(--k-red)" }}>●</span>
-                <span>
-                  <b style={{ fontWeight: 500 }}>
-                    <V v={c?.item} w={120} />
-                  </b>{" "}
-                  <span style={{ color: "var(--text-2)" }}>{c?.detalhe}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </Section>
+        </div>
       </div>
     </AppWindow>
   );

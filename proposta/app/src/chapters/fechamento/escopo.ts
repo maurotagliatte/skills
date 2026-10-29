@@ -18,15 +18,20 @@ export const MODULOS: Modulo[] = [
   {
     capitulo: "01",
     id: "prontuario",
-    titulo: "Prontuário por voz",
-    itens: ["App para gravar no exame", "Agente que estrutura no seu modelo", "Importação do Google Drive"],
+    titulo: "Prontuário e relatórios",
+    itens: [
+      "Exame Locomotor por voz, no seu modelo",
+      "Relatórios de atendimento, internação, imagem e alta",
+      "Status de conferência e envio pelo WhatsApp",
+      "Clientes e pacientes migrados do SimplesVet",
+    ],
     fase: 1,
   },
   {
     capitulo: "02",
     id: "financeiro",
     titulo: "Financeiro",
-    itens: ["Contas a pagar e a receber", "Leitura de comprovantes e boletos", "Alertas, conciliação e relatórios"],
+    itens: ["Orçamentos aprovados e não aprovados", "Contas a pagar, a receber e a enviar", "Leitura de comprovantes e boletos", "Alertas, conciliação e relatórios"],
     fase: 1,
   },
   {

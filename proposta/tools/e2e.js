@@ -18,7 +18,7 @@ const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no
     const ch = (await p.locator("header span.mono").last().textContent()) ?? "";
     if (ch !== last) { console.log(`${((Date.now() - t0) / 1000).toFixed(0)}s  capítulo ${ch}`); last = ch; }
     if (n++ % 3 === 0) await p.screenshot({ path: `${out}/${String(n).padStart(4, "0")}.png` });
-    const skip = p.getByText("Pular e ver um exemplo", { exact: true });
+    const skip = p.getByText(/^Pular e /);
     if (await skip.first().isVisible().catch(() => false)) { await skip.first().click().catch(() => {}); continue; }
     let clicked = false;
     for (const name of NEXT) {
