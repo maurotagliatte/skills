@@ -22,25 +22,34 @@ export const agent: ChapterAgent = {
       parameters: {
         type: "object",
         properties: {
+          origem_destaque: origem,
           resumo: str,
           insights: {
             type: "array",
             items: {
               type: "object",
-              properties: { titulo: str, evidencia: str, acao: str, origem },
+              properties: { origem, titulo: str, evidencia: str, acao: str },
               required: ["titulo", "evidencia", "acao", "origem"],
             },
           },
-          origem_destaque: origem,
         },
-        required: ["resumo", "insights", "origem_destaque"],
+        required: ["origem_destaque", "resumo", "insights"],
       },
     },
   ],
   prompt: () => `Dados do CRM:\n\n${datasetTexto()}\n\nQual origem traz o lead bom, qual engana, e o que fazer com a verba?`,
   demo: () => [
     { kind: "wait", ms: 1100 },
-    { kind: "tool", name: "analisar_leads", args: EXEMPLO_ANALISE },
+    // origem antes do texto: o painel destaca a linha enquanto o insight se escreve
+    {
+      kind: "tool",
+      name: "analisar_leads",
+      args: {
+        origem_destaque: EXEMPLO_ANALISE.origem_destaque,
+        resumo: EXEMPLO_ANALISE.resumo,
+        insights: EXEMPLO_ANALISE.insights.map(({ origem, ...r }) => ({ origem, ...r })),
+      },
+    },
     { kind: "text", text: "Deixei o Anúncio A destacado no painel. Se quiser, preparo a nova divisão de verba para você aprovar." },
   ],
 };

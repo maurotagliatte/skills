@@ -56,7 +56,7 @@ export default function LeadsChapter({ onNext }: ChapterProps) {
   const running = agent.run.status === "running";
   const status: PanelState["status"] =
     phase !== "live" && phase !== "scope" ? "idle" : agent.run.status === "done" ? "pronto" : call ? "escrevendo" : running ? "lendo" : "idle";
-  const destaque = a.origem_destaque ?? (status === "escrevendo" ? ultimo?.origem : undefined);
+  const destaque = status === "escrevendo" ? (ultimo?.origem ?? a.origem_destaque) : a.origem_destaque;
 
   return (
     <>
