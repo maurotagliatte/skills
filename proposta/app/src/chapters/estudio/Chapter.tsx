@@ -225,7 +225,7 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
             "Apresentações de aula e palestra com o manual da marca aplicado",
             "Manual de marca da clínica (logo, cores, fotos) como base de tudo",
           ]}
-          phase="Fase 2"
+          phase="Fase 3"
           metric="Peças produzidas por semana"
           onNext={onNext}
         />

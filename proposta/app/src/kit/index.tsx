@@ -329,7 +329,7 @@ export function PauseCard({
       {onSkip && (
         <button
           onClick={onSkip}
-          style={{ marginTop: 14, background: "none", border: 0, padding: 0, color: "var(--text-inv-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
+          style={{ display: "block", marginTop: 14, background: "none", border: 0, padding: 0, color: "var(--text-inv-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
         >
           {skipLabel}
         </button>
