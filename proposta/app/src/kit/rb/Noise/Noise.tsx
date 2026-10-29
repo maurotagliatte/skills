@@ -159,8 +159,10 @@ const Noise = ({
     const root = rootRef.current;
     const grain = grainRef.current;
     const canvas = dustRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!root || !grain || !canvas || !ctx) return undefined;
+    // (local) sem poeira nem riscos o canvas nem é montado: um canvas do tamanho da moldura em cada
+    // fundo custava caro na composição (sobretudo no celular)
+    const ctx = canvas?.getContext('2d') ?? null;
+    if (!root || !grain) return undefined;
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const scratchList: { x: number; age: number; life: number; weight: number; light: boolean; phase: number }[] = [];
     let raf = 0;
@@ -172,6 +174,7 @@ const Noise = ({
     let height = 1;
 
     const paintDust = (s: typeof settings, step: number) => {
+      if (!canvas || !ctx) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -233,6 +236,7 @@ const Noise = ({
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = Math.max(1, root.clientWidth);
       height = Math.max(1, root.clientHeight);
+      if (!canvas) return;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       paintDust(settingsRef.current, 0);
@@ -304,7 +308,7 @@ const Noise = ({
           backgroundSize: `${TILE * settings.size}px ${TILE * settings.size}px`
         }}
       />
-      <canvas ref={dustRef} className="noise__dust" />
+      {(dust > 0 || scratches > 0) && <canvas ref={dustRef} className="noise__dust" />}
       {scanlines > 0 && (
         <div ref={linesRef} className="noise__lines" style={{ opacity: clamp(scanlines, 0, 1), mixBlendMode: blend }} />
       )}

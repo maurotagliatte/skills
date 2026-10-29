@@ -4,7 +4,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import SplitText from "@/kit/rb/SplitText/SplitText";
 
-/** Camada fixa sobre o palco para os cards de interação, ao vivo e escopo (lado direito). */
+/**
+ * Camada fixa sobre o palco para os cards de interação, ao vivo e escopo (lado direito).
+ * Em telas baixas o card encolhe (--ui-scale) e rola por dentro; no celular em pé vira uma
+ * folha presa embaixo, na largura da tela (ver .k-overlay em globals.css).
+ */
 export function Overlay({ show, children, side = "right" }: { show: boolean; children: ReactNode; side?: "right" | "center" }) {
   return (
     <AnimatePresence>
@@ -14,6 +18,8 @@ export function Overlay({ show, children, side = "right" }: { show: boolean; chi
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8, transition: { duration: 0.25 } }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="k-overlay"
+          data-side={side}
           style={{
             position: "absolute",
             zIndex: 30,
@@ -22,7 +28,7 @@ export function Overlay({ show, children, side = "right" }: { show: boolean; chi
             translate: side === "right" ? "0 -50%" : "-50% -50%",
           }}
         >
-          {children}
+          <div className="k-overlay-body">{children}</div>
         </motion.div>
       )}
     </AnimatePresence>

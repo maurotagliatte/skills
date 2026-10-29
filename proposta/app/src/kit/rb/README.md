@@ -12,3 +12,5 @@ Adaptações locais (marcadas com `(local)` no código):
   escala da câmera, `dpr` automático no zoom, grade CSS estática sem WebGL2.
 - `SplitText`: prop `startDelay` (s) para encadear linhas.
 - `SlideCommit`: classe `slide-commit--khard` (texto do trilho claro com alça vermelha).
+- `Noise`: o `<canvas>` de poeira/riscos só é montado com `dust` ou `scratches` > 0 (vazio, ele pesava na
+  composição de cada fundo, sobretudo no celular).

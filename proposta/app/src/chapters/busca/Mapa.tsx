@@ -66,18 +66,29 @@ export function Mapa({ formed, asked, itens, shown, cited }: { formed: boolean; 
         fontFamily: "var(--font-mono)",
       }}
     >
-      {/* poeira */}
-      {DUST.map((d, i) => (
-        <motion.span
-          key={d.key}
-          initial={false}
-          animate={formed ? { opacity: d.o, x: 0, y: 0 } : { opacity: 0, x: -px(d.x) - 40 + rand(i) * 30, y: (rand(i * 9) - 0.5) * 300 }}
-          transition={{ duration: 1.4, delay: formed ? 0.2 + rand(i * 2) * 1.6 : 0, ease: [0.22, 1, 0.36, 1] }}
-          style={{ position: "absolute", left: px(d.x), top: py(d.y), fontSize: d.size, color: "#a99c84", lineHeight: 1, translate: "-50% -50%" }}
-        >
-          {d.ch}
-        </motion.span>
-      ))}
+      {/* poeira: transição CSS (roda no compositor), não 448 animações em JS a cada quadro */}
+      {DUST.map((d, i) => {
+        const t = `1.4s cubic-bezier(0.22, 1, 0.36, 1) ${(0.2 + rand(i * 2) * 1.6).toFixed(2)}s`;
+        return (
+          <span
+            key={d.key}
+            style={{
+              position: "absolute",
+              left: px(d.x),
+              top: py(d.y),
+              fontSize: d.size,
+              color: "#a99c84",
+              lineHeight: 1,
+              translate: "-50% -50%",
+              opacity: formed ? d.o : 0,
+              transform: formed ? "none" : `translate(${(-px(d.x) - 40 + rand(i) * 30).toFixed(1)}px, ${((rand(i * 9) - 0.5) * 300).toFixed(1)}px)`,
+              transition: formed ? `opacity ${t}, transform ${t}` : "none",
+            }}
+          >
+            {d.ch}
+          </span>
+        );
+      })}
 
       {/* rótulos dos assuntos */}
       {(Object.keys(CLUSTERS) as ClusterId[]).map((id) => {

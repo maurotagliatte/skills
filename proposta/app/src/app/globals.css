@@ -96,6 +96,64 @@ input, textarea { font: inherit; }
 
 .mono { font-family: var(--font-mono); }
 
+/* ——— Cards sobre o palco (<Overlay>) ——— */
+.k-overlay[data-side="right"] {
+  scale: var(--ui-scale, 1);
+  transform-origin: right center;
+}
+.k-overlay-body {
+  max-height: calc((100dvh - 120px) / var(--ui-scale, 1));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  border-radius: 18px;
+}
+.k-overlay-body::-webkit-scrollbar { display: none; }
+.k-overlay[data-side="center"] .k-overlay-body { max-height: none; overflow: visible; }
+
+/* celular em pé: o card vira uma folha embaixo, na largura da tela, e o palco sobe (Stage) */
+@media (max-width: 640px) and (orientation: portrait) {
+  .k-overlay[data-side="right"] {
+    top: auto !important;
+    bottom: calc(66px + env(safe-area-inset-bottom)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    translate: none !important;
+    scale: 1;
+  }
+  .k-overlay[data-side="right"] .k-overlay-body { max-height: 54dvh; }
+  .k-overlay[data-side="right"] .k-overlay-body > * { width: auto !important; max-width: 100%; }
+}
+
+.k-rotate-hint { display: none; }
+@media (max-width: 640px) and (orientation: portrait) {
+  .k-rotate-hint {
+    position: absolute;
+    z-index: 45;
+    top: calc(14px + env(safe-area-inset-top));
+    left: 50%;
+    translate: -50% 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-dark);
+    color: var(--text-inv-2);
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: k-hint-out 0.6s ease 7s forwards;
+  }
+}
+@keyframes k-hint-out { to { opacity: 0; visibility: hidden; } }
+
+/* toque: alvos maiores na barra de capítulos */
+@media (pointer: coarse) {
+  .k-progress { height: 22px !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

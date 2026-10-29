@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
-import { IconPlayerPauseFilled, IconPlayerPlayFilled, IconLayoutList, IconX } from "@tabler/icons-react";
+import { IconDeviceMobileRotated, IconPlayerPauseFilled, IconPlayerPlayFilled, IconLayoutList, IconX } from "@tabler/icons-react";
 import { chapters } from "@/chapters";
 import { BrandLogo } from "@/kit";
 import { PlaybackContext } from "./playback";
@@ -17,6 +17,16 @@ export function Proposal() {
     const id = new URLSearchParams(window.location.search).get("c");
     const i = chapters.findIndex((c) => c.id === id);
     if (i > 0) setIndex(i);
+  }, []);
+  // telas baixas (celular deitado, notebook pequeno): os cards sobre o palco encolhem um pouco
+  useEffect(() => {
+    const fit = () => {
+      const k = Math.min(window.innerHeight / 760, window.innerWidth / 1000, 1);
+      document.documentElement.style.setProperty("--ui-scale", Math.max(0.82, k).toFixed(3));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
   }, []);
   const [paused, setPaused] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -88,7 +98,7 @@ export function Proposal() {
               left: 0,
               right: 0,
               height: 56,
-              padding: "0 28px",
+              padding: "env(safe-area-inset-top) max(28px, env(safe-area-inset-right)) 0 max(28px, env(safe-area-inset-left))",
               display: "flex",
               alignItems: "center",
               zIndex: 40,
@@ -105,9 +115,9 @@ export function Proposal() {
           <footer
             style={{
               position: "absolute",
-              left: 28,
-              right: 28,
-              bottom: 18,
+              left: "max(28px, env(safe-area-inset-left))",
+              right: "max(28px, env(safe-area-inset-right))",
+              bottom: "calc(18px + env(safe-area-inset-bottom))",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -138,7 +148,7 @@ export function Proposal() {
           </footer>
 
           {/* barra de progresso: cada trecho leva ao capítulo */}
-          <nav aria-label="Progresso" style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 10, display: "flex", gap: 2, zIndex: 41 }}>
+          <nav aria-label="Progresso" className="k-progress" style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 10, display: "flex", gap: 2, zIndex: 41 }}>
             {chapters.map((c, i) => (
               <button
                 key={c.id}
@@ -161,6 +171,12 @@ export function Proposal() {
             ))}
           </nav>
 
+          {/* celular em pé: a proposta é pensada na horizontal (some sozinho; só aparece em retrato) */}
+          <div className="k-rotate-hint" role="note">
+            <IconDeviceMobileRotated size={16} />
+            Gire o celular para ver melhor
+          </div>
+
           <AnimatePresence>
             {menu && (
               <motion.div
@@ -169,9 +185,10 @@ export function Proposal() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
                 onClick={() => setMenu(false)}
-                style={{ position: "absolute", inset: 0, zIndex: 50, background: "rgba(5,5,5,.94)", display: "grid", placeItems: "center" }}
+                style={{ position: "absolute", inset: 0, zIndex: 50, background: "rgba(5,5,5,.94)", display: "flex", overflowY: "auto", padding: "16px 0" }}
               >
-                <div role="dialog" aria-label="Capítulos" onClick={(e) => e.stopPropagation()} style={{ width: "min(880px, calc(100vw - 32px))", color: "var(--text-inv)" }}>
+                {/* margin auto centraliza sem cortar o topo quando a lista não cabe (celular): aí ela rola */}
+                <div role="dialog" aria-label="Capítulos" onClick={(e) => e.stopPropagation()} style={{ width: "min(880px, calc(100vw - 32px))", margin: "auto", color: "var(--text-inv)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                     <span className="display" style={{ fontSize: 22 }}>
                       Capítulos
@@ -180,7 +197,7 @@ export function Proposal() {
                       <IconX size={16} />
                     </RoundBtn>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(200px, 40vw), 1fr))", gap: 10 }}>
                     {chapters.map((c, i) => (
                       <button
                         key={c.id}

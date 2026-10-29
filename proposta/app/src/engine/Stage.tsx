@@ -58,6 +58,10 @@ export function frame(box: Box, opts: Omit<Shot, "x" | "y" | "zoom"> & { pad?: n
   return { x: cx + offset, y: cy, zoom, ...rest };
 }
 
+/** Motion blur da câmera só onde há GPU folgada: ponteiro fino (desktop) e sem "reduzir movimento". */
+const canMotionBlur = () =>
+  typeof window !== "undefined" && !prefersReducedMotion() && !!window.matchMedia?.("(hover: hover) and (pointer: fine)").matches;
+
 export const Stage = forwardRef<StageHandle, Props>(function Stage(
   { width, height, shots, running, onCue, onEnd, tone = "dark", children },
   ref,
@@ -74,6 +78,11 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage(
   const last = useRef({ x: 0, y: 0 });
   // intensidade do motion blur (px de blur por px/quadro); menor na saída do capítulo
   const blurK = useRef(0.06);
+  // o desfoque refaz a rasterização do mundo inteiro a cada quadro: só em desktop (mouse), nunca no toque
+  const blurOn = useRef<boolean | null>(null);
+  if (blurOn.current === null) blurOn.current = canMotionBlur();
+  // último estilo escrito: o ticker roda a cada quadro e não deve reescrever o mesmo valor
+  const written = useRef({ transform: "", filter: "" });
   const { paused } = usePlayback();
   const cbs = useRef({ onCue, onEnd });
   cbs.current = { onCue, onEnd };
@@ -87,13 +96,16 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage(
     const fit = Math.min(vw / DESIGN_W, vh / DESIGN_H);
     const s = cam.current.zoom * fit;
     const tx = vw / 2 - cam.current.x * s;
-    const ty = vh / 2 - cam.current.y * s;
+    // celular em pé: o mundo ocupa só uma faixa; sobe para o card (folha embaixo) não cobri-lo
+    const ty = (vw <= 640 && vh > vw ? vh * 0.36 : vh / 2) - cam.current.y * s;
     // motion blur proporcional à velocidade, como no vídeo de referência
     const speed = Math.hypot(tx - last.current.x, ty - last.current.y);
     last.current = { x: tx, y: ty };
-    const blur = Math.min(speed * blurK.current, 10);
-    w.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${s})`;
-    w.style.filter = blur > 0.4 ? `blur(${blur.toFixed(1)}px)` : "none";
+    const blur = blurOn.current ? Math.min(speed * blurK.current, 10) : 0;
+    const transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${s.toFixed(5)})`;
+    const filter = blur > 0.4 ? `blur(${blur.toFixed(1)}px)` : "none";
+    if (transform !== written.current.transform) w.style.transform = written.current.transform = transform;
+    if (filter !== written.current.filter) w.style.filter = written.current.filter = filter;
   };
 
   useLayoutEffect(() => {
@@ -208,7 +220,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage(
     <div ref={viewport} style={{ position: "absolute", inset: 0, overflow: "hidden", background: tone === "light" ? TONE_BG.light : undefined }}>
       <div
         ref={world}
-        style={{ position: "absolute", left: 0, top: 0, width, height, transformOrigin: "0 0", willChange: "transform, filter" }}
+        style={{ position: "absolute", left: 0, top: 0, width, height, transformOrigin: "0 0", willChange: "transform" }}
       >
         {children}
       </div>
