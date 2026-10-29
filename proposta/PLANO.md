@@ -67,9 +67,10 @@ Regras para **não virar comercial**:
 O que observamos nas LPs (`home`, `healthcare`, `design-teams`, `marketing`, `dashboards`,
 `workflows`, `work-items`, `work-item-types`, `customer-requests`):
 
-1. **Janela de produto clara flutuando sobre fundo fotográfico pintado/desfocado** — paisagens com
-   motion blur em tons de terra, oliva, areia, céu (cantos 12–16 px, sombra suave, moldura fina).
-   É a imagem-assinatura que você citou.
+1. **Janela de produto clara flutuando sobre foto ICM** (fotografia real com câmera em movimento,
+   que parece pincelada diagonal) — oliva, mostarda, ocre, bege, musgo; variante noturna azul-marinho com
+   rastros de luz na healthcare. Janela sempre frontal (sem isometria/3D), cantos 12–16 px, sombra
+   difusa, borda fina, 5–8% de foto visível em volta e cortada na base. É a imagem-assinatura.
 2. **Hero centralizado**: eyebrow mono em azul (`PLANE FOR HEALTHCARE`), título grande leve (2 linhas),
    subtítulo cinza, 2 botões (preto sólido + outline).
 3. **Seções de feature 50/50**: texto + 3 bullets com ícone à esquerda; recorte de UI sobre fundo pintado
@@ -78,19 +79,26 @@ O que observamos nas LPs (`home`, `healthcare`, `design-teams`, `marketing`, `da
 5. **Blocos escuros (#141515)** para IA: cards cinza-escuro com UI do agente dentro.
 6. **Agente como colega dentro da UI**: badge de agente, status âmbar "Awaiting response",
    thread de atividade, painel "AI assistant" à direita.
-7. **Ilustrações em pontos/ASCII 3D** (página healthcare: máquinas em nuvem de pontos).
+7. **Ilustrações ASCII 3D** (healthcare: braço robótico e equipamento médico em caracteres mono
+   bege-claro sobre off-white, em cards quadrados) — usadas como transições conceituais sem UI.
+   Cursores com etiqueta colorida ("Sarah", "Ethan") mostram colaboração ao vivo.
 8. **Tabs com sublinhado progressivo** ("Plan with the whole team | Pages… | Agents…") que trocam o recorte.
 9. **CTA final** sobre faixa fotográfica pintada + rodapé preto com wordmark gigante.
 
-Tipografia/tokens da Plane (do CSS do site): **Inter** (UI), **Satoshi** (títulos), **IBM Plex Mono**
-(eyebrows/labels); acento `#006399` (claro) / `#2893cc` (escuro); neutros `#141515`, `#1d1f20`, `#fafafa`.
+Tipografia/tokens da Plane (do CSS do site): títulos em **Satoshi peso 430**, tracking −0.03em,
+H1 58 px (36 px mobile); UI/corpo em **Inter**; **IBM Plex Mono** em eyebrows, código e ASCII.
+Página predominantemente clara (`#ffffff`, canvas ≈ `#eff0f0`), blocos escuros `#141515`/`#1d1f20`.
+Acento `#006399` (claro) / `#2893cc` (escuro), usado com parcimônia. Raios 6/8/12/16/24 px.
+Imagens-fonte catalogadas em `referencias/REFERENCIAS.md`.
 
 **Tradução para a cliente** (mesma gramática, conteúdo dela):
 
-- Fundos pintados com **cavalos, pista, haras, luz dourada**, em motion blur — gerados (Magnific/FLUX)
-  com o mesmo tratamento das LPs.
-- **Esqueleto/biomecânica do cavalo em nuvem de pontos** (eco das ilustrações ASCII da healthcare) —
-  usado no capítulo de busca semântica e na abertura.
+- Fotos ICM de **cavalos, pista, haras, luz dourada** — geradas (Magnific/FLUX) ou fotografadas com
+  o mesmo tratamento das LPs.
+- **Esqueleto/biomecânica do cavalo em ASCII 3D** (eco direto da healthcare) — na abertura e no
+  capítulo de busca semântica, onde os caracteres se reagrupam como "vetores".
+- O canvas escuro do vídeo de referência = os blocos bento pretos da Plane; a câmera para sobre
+  janelas claras em foto ICM.
 - A marca exibida é **Khard** (nunca logotipo/nome da Plane). Pegamos a gramática, não a identidade.
 - Telas do produto: as composições do Khard's Space já existentes no Figma (`referencias/figma/`)
   redesenhadas no estilo claro das LPs.
