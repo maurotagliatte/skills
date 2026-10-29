@@ -51,7 +51,7 @@ export function Proposta() {
     <div
       style={{
         width: "min(1160px, calc(100vw - 80px))",
-        height: "min(740px, calc(100vh - 160px))",
+        height: "min(700px, calc(100vh - 160px))",
         background: "#fff",
         color: "var(--text-1)",
         borderRadius: 20,
@@ -73,7 +73,7 @@ export function Proposta() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--text-3)" }}>
           <BrandLogo brand="khard" height={22} />
           <span>para</span>
-          <BrandLogo brand="guenka" height={28} />
+          <BrandLogo brand="guenka" height={44} />
         </div>
       </div>
 
@@ -300,7 +300,7 @@ function Aceite() {
                 Combinado.
               </div>
               <p style={{ margin: 0, color: "var(--text-2)", lineHeight: 1.55 }}>
-                O próximo passo é a reunião de kickoff. A Khard fala com você para marcar o dia e começar pela Fase 1.
+                O próximo passo é a reunião de kickoff. Responda a mensagem em que recebeu este link para marcarmos o dia e começarmos pela Fase 1.
               </p>
             </motion.div>
           )}

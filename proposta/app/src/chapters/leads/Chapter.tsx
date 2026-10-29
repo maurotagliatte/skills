@@ -83,9 +83,11 @@ export default function LeadsChapter({ onNext }: ChapterProps) {
           <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
             A Donna lê os {TOTAL_LEADS} leads dos últimos 30 dias, com origem, perfil e resultado, e diz onde está o dinheiro bem gasto.
           </p>
-          <Button icon={IconSparkles} onClick={() => pedir(false)}>
-            Pedir análise para a Donna
-          </Button>
+          <div>
+            <Button icon={IconSparkles} onClick={() => pedir(false)}>
+              Pedir análise para a Donna
+            </Button>
+          </div>
         </PauseCard>
       </Overlay>
 

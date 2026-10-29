@@ -150,9 +150,11 @@ export default function CmsChapter({ onNext }: ChapterProps) {
               ? "Link detectado. Nesta demonstração a Donna não abre a página: usa o endereço como pista de tema. Ler o site inteiro entra no projeto."
               : "Se colar um link, a Donna usa o endereço como pista de tema — nesta demonstração ela não abre a página."}
           </p>
-          <Button icon={IconSparkles} onClick={() => submit(pedido)} disabled={!pedido.trim()}>
-            Escrever o post
-          </Button>
+          <div>
+            <Button icon={IconSparkles} onClick={() => submit(pedido)} disabled={!pedido.trim()}>
+              Escrever o post
+            </Button>
+          </div>
         </PauseCard>
       </Overlay>
 
@@ -184,7 +186,7 @@ export default function CmsChapter({ onNext }: ChapterProps) {
               <b style={{ color: "var(--k-red)" }}>Donna:</b> {agent.run.text}
             </p>
           )}
-          {fase === "pub" && <p style={{ margin: "12px 0 0", color: "#7ee2a8" }}>Publicado no blog, com a sua marca. O painel orgânico passa a acompanhar este post.</p>}
+          {fase === "pub" && <p style={{ margin: "12px 0 0", color: "#7ee2a8" }}>Depois da sua revisão, vai ao ar assim — com a sua marca. O painel orgânico passa a acompanhar o post.</p>}
         </div>
       </Overlay>
 

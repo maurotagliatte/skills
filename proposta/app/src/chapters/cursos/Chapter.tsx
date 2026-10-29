@@ -159,9 +159,11 @@ export default function CursosChapter({ onNext }: ChapterProps) {
               </Step>
             </span>
           </div>
-          <Button icon={IconArrowRight} onClick={toTema} disabled={demoSim}>
-            Ver a produção das aulas
-          </Button>
+          <div>
+            <Button icon={IconArrowRight} onClick={toTema} disabled={demoSim}>
+              Ver a produção das aulas
+            </Button>
+          </div>
         </PauseCard>
       </Overlay>
 
@@ -184,9 +186,11 @@ export default function CursosChapter({ onNext }: ChapterProps) {
               </button>
             ))}
           </div>
-          <Button icon={IconSparkles} onClick={() => submit(tema)} disabled={!tema.trim()}>
-            Produzir a aula
-          </Button>
+          <div>
+            <Button icon={IconSparkles} onClick={() => submit(tema)} disabled={!tema.trim()}>
+              Produzir a aula
+            </Button>
+          </div>
         </PauseCard>
       </Overlay>
 

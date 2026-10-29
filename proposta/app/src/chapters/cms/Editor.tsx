@@ -120,7 +120,7 @@ export function Editor({ p, working, done, published }: { p: P; working: boolean
       </Field>
       {(working || done) && (
         <div style={{ borderTop: "1px solid var(--border)", paddingTop: 6 }}>
-          <AgentRow status={published ? "publicado" : done ? "pronto para revisão" : "escrevendo…"} done={done}>
+          <AgentRow status={published ? "publicado" : done ? "pronto" : "escrevendo…"} done={done}>
             {published ? "No ar em /blog/" + (p.slug ?? "") : p.titulo ? "Rascunho, SEO e links internos" : "Pesquisando o tema no seu blog…"}
           </AgentRow>
         </div>

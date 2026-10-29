@@ -19,7 +19,7 @@ const H = 1500;
 // Mundo: [horários espalhados] → [virada] → [semana no sistema]
 const BOX = {
   antes: { x: 140, y: 170, w: 1180, h: 1190 },
-  virada: { x: 1440, y: 470, w: 980, h: 520 },
+  virada: { x: 1440, y: 490, w: 980, h: 300 },
   sistema: { x: 2560, y: 300, w: 1180, h: 900 },
 };
 const SHOTS: Shot[] = [

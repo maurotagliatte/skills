@@ -19,7 +19,7 @@ export function Published({ p, show }: { p: Partial<PostGerado>; show: boolean }
           boxShadow: "var(--shadow-window)",
           overflow: "hidden",
           display: "grid",
-          gridTemplateRows: "34px 60px 1fr",
+          gridTemplateRows: "34px 78px 1fr",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 14px", background: "#f1f1f1", borderBottom: "1px solid var(--border)" }}>
@@ -33,7 +33,7 @@ export function Published({ p, show }: { p: Partial<PostGerado>; show: boolean }
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 22, padding: "0 40px", borderBottom: "1px solid var(--border)" }}>
-          <BrandLogo brand="guenka" height={30} />
+          <BrandLogo brand="guenka" height={56} />
           <span style={{ marginLeft: "auto", display: "flex", gap: 20, color: "var(--text-2)" }}>
             <span>Atendimento</span>
             <span>Cursos</span>
@@ -48,7 +48,7 @@ export function Published({ p, show }: { p: Partial<PostGerado>; show: boolean }
           <div className="display" style={{ fontSize: 34, lineHeight: 1.12, marginBottom: 12 }}>
             {p.titulo}
           </div>
-          <div style={{ color: "var(--text-3)", marginBottom: 18 }}>Dra. Gabriela Guenka · Médica-veterinária · 6 min de leitura</div>
+          <div style={{ color: "var(--text-3)", marginBottom: 18 }}>Dra. Gabriela Guenka · Médica-veterinária · {Math.max(1, Math.round((p.corpo ?? "").split(/\s+/).length / 200))} min de leitura</div>
           <div style={{ height: 190, borderRadius: 12, backgroundImage: "url(/bg/icm-dourado.webp)", backgroundSize: "cover", backgroundPosition: "center", marginBottom: 18 }} />
           <p style={{ margin: 0, lineHeight: 1.65, fontSize: 14, color: "var(--text-2)" }}>{primeiro}</p>
         </div>

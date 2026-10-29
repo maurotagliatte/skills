@@ -24,7 +24,7 @@ export function Members({ aula, show }: { aula: Partial<Aula>; show: boolean }) 
         boxShadow: "var(--shadow-window)",
         overflow: "hidden",
         display: "grid",
-        gridTemplateRows: "34px 58px 1fr",
+        gridTemplateRows: "34px 72px 1fr",
         color: "var(--text-1)",
       }}
     >
@@ -53,7 +53,7 @@ export function Members({ aula, show }: { aula: Partial<Aula>; show: boolean }) 
       </div>
       {/* cabeçalho com a marca dela */}
       <div style={{ display: "flex", alignItems: "center", gap: 18, padding: "0 24px", borderBottom: "1px solid var(--border)", background: "#fff" }}>
-        <BrandLogo brand="guenka" height={30} />
+        <BrandLogo brand="guenka" height={50} />
         <span style={{ fontWeight: 600 }}>Biomecânica Equina Aplicada</span>
         <span style={{ display: "flex", gap: 16, marginLeft: 18, color: "var(--text-2)" }}>
           <b style={{ color: "var(--text-1)", fontWeight: 500 }}>Módulos</b>
@@ -94,7 +94,7 @@ export function Members({ aula, show }: { aula: Partial<Aula>; show: boolean }) 
           <div
             style={{
               position: "relative",
-              height: 300,
+              height: 286,
               borderRadius: 12,
               overflow: "hidden",
               backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.5)), url(/bg/icm-musgo.webp)",

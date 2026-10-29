@@ -83,7 +83,7 @@ export const CORPUS: (Item & { x: number; y: number })[] = (() => {
   return RAW.map((it) => {
     const i = (seen[it.cluster] = (seen[it.cluster] ?? -1) + 1);
     const c = CLUSTERS[it.cluster];
-    const r = 3.2 + 3 * Math.sqrt(i);
+    const r = 3.6 + 3.4 * Math.sqrt(i);
     const a = i * 2.39996 + it.id.length;
     return { ...it, x: c.x + r * Math.cos(a) + (it.dx ?? 0), y: c.y + r * Math.sin(a) * 0.85 + (it.dy ?? 0) };
   });

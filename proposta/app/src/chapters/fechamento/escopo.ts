@@ -97,7 +97,7 @@ export const FASES: { fase: Fase; nome: string; foco: string; entrega: string }[
     fase: 3,
     nome: "Conteúdo e conhecimento",
     foco: "Transformar o que você já sabe em conteúdo, material e busca.",
-    entrega: "Blog que ranqueia, estúdio com a sua marca e busca em todo o acervo.",
+    entrega: "Blog publicado com SEO, estúdio com a sua marca e busca em todo o acervo.",
   },
 ];
 

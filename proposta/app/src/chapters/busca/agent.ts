@@ -178,6 +178,9 @@ const LEG: Record<string, string> = {
   extracao: "extração",
   colica: "cólica",
   inscricoes: "inscrições",
+  laco: "laço",
+  efusao: "efusão",
+  mastigacao: "mastigação",
 };
 const legivel = (k: string) => LEG[k] ?? k;
 const listar = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} e ${xs[xs.length - 1]}`);
