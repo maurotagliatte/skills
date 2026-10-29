@@ -13,8 +13,7 @@ import {
   IconSearch,
   type Icon,
 } from "@tabler/icons-react";
-import { AppWindow, Chip, type NavEntry } from "@/kit";
-import { N } from "./anim";
+import { AppWindow, Chip, type NavEntry, CountUp } from "@/kit";
 import { LEADS, ORIGENS, TOTAL_LEADS, type OrigemId } from "./data";
 
 export const NAV: NavEntry[] = [
@@ -45,7 +44,7 @@ export function Board({ chegaram }: { chegaram: number }) {
             Leads
           </span>
           <span style={{ color: "var(--text-2)" }}>
-            <N v={total} fmt={(n) => Math.round(n).toString()} /> nos últimos 30 dias · por origem
+            <CountUp v={total} fmt={(n) => Math.round(n).toString()} /> nos últimos 30 dias · por origem
           </span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, flex: 1, minHeight: 0 }}>
@@ -60,7 +59,7 @@ export function Board({ chegaram }: { chegaram: number }) {
                     <I size={15} color="var(--text-2)" />
                     <b style={{ fontWeight: 600 }}>{o.nome}</b>
                     <span style={{ marginLeft: "auto", fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
-                      <N v={n} fmt={(x) => Math.round(x).toString()} />
+                      <CountUp v={n} fmt={(x) => Math.round(x).toString()} />
                     </span>
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{o.detalhe}</div>

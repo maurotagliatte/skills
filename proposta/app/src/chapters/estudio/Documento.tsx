@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { IconPrinter, IconFileText, IconDroplet, IconRuler2, IconCheck } from "@tabler/icons-react";
-import { BrandLogo, Button, Prop, Chip } from "@/kit";
+import { BrandLogo, Button, Prop, Chip, SpecRow } from "@/kit";
 import type { Documento } from "./agent";
-import { SpecRow, type Status } from "./equipe";
+import { EQUIPE, type Status } from "./equipe";
 import css from "./estudio.module.css";
 
 type D = Partial<Documento>;
@@ -179,7 +179,9 @@ export function DocumentoView({ d, n, statuses, done }: { d: D; n: number; statu
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
           <div style={{ fontWeight: 600, marginBottom: 2 }}>Equipe</div>
           {statuses.map((s) => (
-            <SpecRow key={s.who} s={s} />
+            <SpecRow key={s.who} name={s.who} color={EQUIPE[s.who].color} state={s.state}>
+              {s.text}
+            </SpecRow>
           ))}
         </div>
         <div style={{ flex: 1 }} />

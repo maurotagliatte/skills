@@ -17,7 +17,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons-react";
-import { AppWindow, AgentRow, Chip, Prop, Cursor, type NavEntry } from "@/kit";
+import { AppWindow, AgentRow, Chip, Prop, Cursor, V, type NavEntry } from "@/kit";
 import { DIAS, fmtCurta, somaDias, diaIndex, hora } from "./datas";
 import type { Evento } from "./agent";
 
@@ -56,20 +56,6 @@ const TONES = {
 const H0 = 7;
 const H1 = 18;
 const ROW = 57;
-
-function V({ v, w = 100 }: { v?: string; w?: number }) {
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      {v ? (
-        <motion.span key="v" initial={{ opacity: 0, filter: "blur(6px)", y: 3 }} animate={{ opacity: 1, filter: "blur(0px)", y: 0 }} transition={{ duration: 0.45 }}>
-          {v}
-        </motion.span>
-      ) : (
-        <motion.span key="s" exit={{ opacity: 0 }} style={{ display: "inline-block", width: w, height: 10, borderRadius: 4, background: "#eceeee", verticalAlign: "middle" }} />
-      )}
-    </AnimatePresence>
-  );
-}
 
 export function Week({ segunda, hoje, ev, done, activity }: { segunda: Date; hoje: Date; ev: Partial<Evento>; done: boolean; activity: Activity }) {
   const dia = diaIndex(ev.dia_semana);

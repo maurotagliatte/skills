@@ -6,7 +6,7 @@ import { IconUpload, IconDownload } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, Cursor } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, Cursor, LiveCard } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { Sheet } from "./Sheet";
 import { Payables, type Activity } from "./Payables";
@@ -31,7 +31,8 @@ const SHOTS: Shot[] = [
 const LIVE_SHOT: Shot = frame(BOX.sistema, { region: "left", pad: 40, dur: 1.2 });
 const ALERT_SHOT: Shot = frame(BOX.alerta, { dur: 1.6 });
 
-type Step = Phase | "alerta";
+// "volta": câmera voltando do celular; o cartão de escopo espera ela parar
+type Step = Phase | "alerta" | "volta";
 type Envio = { src: string; own: boolean };
 
 /** Reduz a imagem no navegador (≤ 1600 px) e devolve um data URL JPEG. */
@@ -81,16 +82,18 @@ export default function FinanceiroChapter({ onNext }: ChapterProps) {
     }
     if (phase === "alerta") {
       const t = setTimeout(async () => {
-        setPhase("scope");
+        setPhase("volta");
         await stage.current?.goTo(LIVE_SHOT);
+        setPhase("scope");
       }, 5200);
       return () => clearTimeout(t);
     }
   }, [phase, agent.run.status]);
 
+  // o card "Sua vez" só aparece quando a câmera para
   const toPause = async () => {
-    setPhase("pause");
     await stage.current?.goTo(LIVE_SHOT);
+    setPhase("pause");
   };
 
   const send = (src: string, own: boolean, text?: string, image?: string) => {
@@ -213,7 +216,7 @@ export default function FinanceiroChapter({ onNext }: ChapterProps) {
       </Overlay>
 
       <Overlay show={phase === "live"}>
-        <div style={{ width: 380, padding: 20, borderRadius: 16, background: "rgba(17,18,18,.86)", backdropFilter: "blur(24px)", border: "1px solid var(--border-dark)", color: "var(--text-inv)" }}>
+        <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
             <span className="eyebrow">Comprovante enviado</span>
             <ModeTag mode={agent.run.mode} />
@@ -239,7 +242,7 @@ export default function FinanceiroChapter({ onNext }: ChapterProps) {
               <b style={{ color: "var(--k-red)" }}>Donna:</b> {agent.run.text}
             </p>
           )}
-        </div>
+        </LiveCard>
       </Overlay>
 
       <Overlay show={phase === "scope"}>

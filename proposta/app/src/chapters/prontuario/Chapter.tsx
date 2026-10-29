@@ -16,7 +16,7 @@ import {
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, Chip } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, Chip, LiveCard, MicLevel } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { useRecorder } from "@/agent/useRecorder";
 import { Record, type Activity, type Status } from "./Record";
@@ -84,9 +84,10 @@ export default function ProntuarioChapter({ onNext }: ChapterProps) {
     setTimeout(() => setPhase("scope"), 2400);
   };
 
+  // o card "Sua vez" só aparece quando a câmera para
   const toPause = async () => {
-    setPhase("pause");
     await stage.current?.goTo(LIVE_SHOT);
+    setPhase("pause");
   };
 
   const submit = (text: string | undefined) => {
@@ -169,14 +170,14 @@ export default function ProntuarioChapter({ onNext }: ChapterProps) {
             <Button icon={mic.state === "recording" ? IconPlayerStopFilled : IconMicrophone} onClick={onRecord}>
               {mic.state === "recording" ? `Parar · ${mic.seconds}s` : mic.state === "asking" ? "Liberando microfone…" : "Gravar áudio"}
             </Button>
-            {mic.state === "recording" && <Wave level={mic.level} />}
+            {mic.state === "recording" && <MicLevel level={mic.level} />}
           </div>
           {mic.state === "denied" && <p style={{ color: "#f3a38c", marginTop: 12 }}>Sem microfone — seguimos com um áudio de exemplo.</p>}
         </PauseCard>
       </Overlay>
 
       <Overlay show={phase === "live"}>
-        <div style={{ width: 380, padding: 20, borderRadius: 16, background: "rgba(17,18,18,.86)", backdropFilter: "blur(24px)", border: "1px solid var(--border-dark)", color: "var(--text-inv)" }}>
+        <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
             <span className="eyebrow">Transcrição</span>
             <ModeTag mode={agent.run.mode} />
@@ -187,7 +188,7 @@ export default function ProntuarioChapter({ onNext }: ChapterProps) {
               <b style={{ color: "var(--k-red)" }}>Donna:</b> {agent.run.text}
             </p>
           )}
-        </div>
+        </LiveCard>
       </Overlay>
 
       <Overlay show={phase === "aprovar"}>
@@ -263,19 +264,6 @@ function Phone({ recording }: { recording: boolean }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Wave({ level }: { level: number }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 3, height: 28 }}>
-      {Array.from({ length: 12 }).map((_, i) => (
-        <span
-          key={i}
-          style={{ width: 3, borderRadius: 3, background: "var(--k-red)", height: 4 + level * 24 * (0.4 + ((i * 7) % 10) / 10), transition: "height .08s" }}
-        />
-      ))}
     </div>
   );
 }

@@ -2,8 +2,7 @@
 
 import { motion } from "motion/react";
 import { IconReceipt, IconArrowDownRight } from "@tabler/icons-react";
-import { Chip } from "@/kit";
-import { N } from "./anim";
+import { Chip, CountUp } from "@/kit";
 import { TAXAS, brl, brlCents, num } from "./calc";
 
 const VENDAS = [
@@ -44,15 +43,15 @@ export function Sales({ show, focus }: { show: boolean; focus: boolean }) {
       </div>
       <div style={{ padding: "20px 24px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 22 }}>
-          <Kpi label="Faturamento" value={<N v={show ? ANO.faturamento : 0} fmt={brl} ms={1400} />} />
-          <Kpi label="Vendas" value={<N v={show ? ANO.vendas : 0} fmt={(n) => num(n)} ms={1400} />} />
+          <Kpi label="Faturamento" value={<CountUp v={show ? ANO.faturamento : 0} fmt={brl} ms={1400} />} />
+          <Kpi label="Vendas" value={<CountUp v={show ? ANO.vendas : 0} fmt={(n) => num(n)} ms={1400} />} />
           <Kpi
             label="Taxas da plataforma"
             hot={focus}
-            value={<N v={show ? ANO_TAXA : 0} fmt={brl} ms={1400} />}
+            value={<CountUp v={show ? ANO_TAXA : 0} fmt={brl} ms={1400} />}
             note={`${num((ANO_TAXA / ANO.faturamento) * 100, 1)}% do que entrou`}
           />
-          <Kpi label="Você recebeu" value={<N v={show ? ANO.faturamento - ANO_TAXA : 0} fmt={brl} ms={1400} />} />
+          <Kpi label="Você recebeu" value={<CountUp v={show ? ANO.faturamento - ANO_TAXA : 0} fmt={brl} ms={1400} />} />
         </div>
 
         <div style={{ fontWeight: 500, marginBottom: 8 }}>Últimas vendas</div>

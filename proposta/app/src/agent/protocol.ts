@@ -3,6 +3,8 @@ export type AgentRequest = {
   chapter: string;
   /** texto (transcrição, pedido, URL…) */
   text?: string;
+  /** opções do capítulo (ex.: a aba do estúdio), separadas do texto do pedido */
+  options?: Record<string, string>;
   /** imagem em data URL (comprovante) */
   image?: string;
   /** força o roteiro de exemplo mesmo com chave configurada */

@@ -182,6 +182,16 @@
 }
 .statusWorking { color: var(--amber); font-weight: 500; }
 .statusDone { color: var(--green); font-weight: 500; }
+.statusWaiting { color: var(--text-3); font-weight: 500; }
+.agentText { color: var(--text-2); }
+/* linha densa de lista (equipe do estúdio) */
+.agentRowList { padding: 8px 0; transition: opacity 0.4s; }
+.agentRowWaiting { opacity: 0.6; }
+/* sobre card escuro */
+.agentRowDark .agentBadge { background: var(--dark-3); color: var(--text-inv-2); border-color: var(--border-dark); }
+.agentRowDark .agentText,
+.agentRowDark .statusWaiting { color: var(--text-inv-2); }
+.agentRowDark .statusDone { color: #7ee2a8; }
 
 .cursor {
   position: absolute;

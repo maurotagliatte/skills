@@ -14,7 +14,7 @@ import {
   IconBrandWhatsapp,
   IconFileDescription,
 } from "@tabler/icons-react";
-import { AppWindow, Chip, AgentRow, type NavEntry } from "@/kit";
+import { AppWindow, Chip, AgentRow, V as Val, type NavEntry, type VProps } from "@/kit";
 import { ARTICULACOES, type Membro, type Prontuario } from "./agent";
 
 /** args parciais: chegam aos poucos via TOOL_CALL_ARGS */
@@ -33,29 +33,8 @@ export const NAV: NavEntry[] = [
   { icon: IconFiles, label: "Documentos" },
 ];
 
-/** Valor que aparece com fade + desfoque quando chega do agente. */
-function V({ v, w = 120 }: { v?: string; w?: number }) {
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      {v ? (
-        <motion.span
-          key="v"
-          initial={{ opacity: 0, filter: "blur(6px)", y: 3 }}
-          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-          transition={{ duration: 0.45 }}
-        >
-          {v}
-        </motion.span>
-      ) : (
-        <motion.span
-          key="s"
-          exit={{ opacity: 0 }}
-          style={{ display: "inline-block", width: w, height: 9, borderRadius: 4, background: "#eef0f0", verticalAlign: "middle" }}
-        />
-      )}
-    </AnimatePresence>
-  );
-}
+/** Valor do agente; no prontuário, a barra de espera é mais baixa e clara. */
+const V = (p: VProps) => <Val w={120} h={9} bg="#eef0f0" {...p} />;
 
 /** Título de seção no estilo do modelo dela (etiqueta em pílula). */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

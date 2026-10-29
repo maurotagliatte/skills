@@ -15,7 +15,7 @@ import {
   IconPlus,
   IconArrowsExchange,
 } from "@tabler/icons-react";
-import { AppWindow, Chip, AgentRow, type NavEntry } from "@/kit";
+import { AppWindow, Chip, AgentRow, V, type NavEntry } from "@/kit";
 import { CONTAS_EXISTENTES, HOJE_CENA, type Comprovante } from "./agent";
 
 export const NAV: NavEntry[] = [
@@ -42,20 +42,6 @@ const num = (s?: string) => {
 const curta = (d?: string) => (d && /^\d{2}\/\d{2}/.test(d) ? d.slice(0, 5) : d);
 
 /** Valor que aparece com fade + desfoque quando chega do agente (mesmo efeito do prontuário). */
-function V({ v, w = 80 }: { v?: string; w?: number }) {
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      {v ? (
-        <motion.span key="v" initial={{ opacity: 0, filter: "blur(6px)", y: 3 }} animate={{ opacity: 1, filter: "blur(0px)", y: 0 }} transition={{ duration: 0.45 }}>
-          {v}
-        </motion.span>
-      ) : (
-        <motion.span key="s" exit={{ opacity: 0 }} style={{ display: "inline-block", width: w, height: 10, borderRadius: 4, background: "#eceeee", verticalAlign: "middle" }} />
-      )}
-    </AnimatePresence>
-  );
-}
-
 const GRID = "minmax(0,1fr) 128px 84px 70px 104px 104px";
 
 function Status({ venc, pago }: { venc?: string; pago?: boolean }) {

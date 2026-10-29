@@ -1,8 +1,7 @@
 "use client";
 
 import { IconCheck, IconAlertTriangle } from "@tabler/icons-react";
-import { AppWindow, Chip } from "@/kit";
-import { N } from "./anim";
+import { AppWindow, Chip, CountUp } from "@/kit";
 import { META_PP, TAXAS, brl, brlCents, milhar, num, pct, type Cenario, type Resultado } from "./calc";
 
 const ESCALA = 12; // % máximo nas barras
@@ -16,7 +15,7 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
           Cenário
         </div>
         <div className="display" style={{ fontSize: 22, margin: "4px 0 16px" }}>
-          {milhar(c.faturamento)}/ano · <N v={r.vendas} fmt={(n) => num(n)} /> vendas · ticket {brl(c.ticket)} · {c.parcelado}% parcelado
+          {milhar(c.faturamento)}/ano · <CountUp v={r.vendas} fmt={(n) => num(n)} /> vendas · ticket {brl(c.ticket)} · {c.parcelado}% parcelado
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -59,7 +58,7 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
               {ok ? <IconCheck size={14} /> : <IconAlertTriangle size={14} />} Cenário conservador
             </div>
             <div className="display" style={{ fontSize: 28, marginTop: 2 }}>
-              <N v={r.ppLiquida} fmt={(n) => `${n >= 0 ? "−" : "+"}${num(Math.abs(n), 1)} p.p.`} />
+              <CountUp v={r.ppLiquida} fmt={(n) => `${n >= 0 ? "−" : "+"}${num(Math.abs(n), 1)} p.p.`} />
             </div>
             <div style={{ fontSize: 12 }}>
               {ok
@@ -96,10 +95,10 @@ function Col({ title, total, ef, accent, children }: { title: string; total: num
       <div style={{ display: "grid", gap: 4, minHeight: 112, alignContent: "start" }}>{children}</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: "1px solid var(--border)", marginTop: 8, paddingTop: 8 }}>
         <span style={{ color: "var(--text-2)" }}>
-          Custo no ano · <N v={ef} fmt={(n) => pct(n)} />
+          Custo no ano · <CountUp v={ef} fmt={(n) => pct(n)} />
         </span>
         <b className="display" style={{ fontSize: 20, fontWeight: 500 }}>
-          <N v={total} fmt={brl} />
+          <CountUp v={total} fmt={brl} />
         </b>
       </div>
     </div>
@@ -114,7 +113,7 @@ function Line({ label, v, tag }: { label: string; v: number; tag?: string }) {
         {tag && <Chip tone="amber">{tag}</Chip>}
       </span>
       <span style={{ color: "var(--text-1)" }}>
-        <N v={v} fmt={brl} />
+        <CountUp v={v} fmt={brl} />
       </span>
     </div>
   );
@@ -151,7 +150,7 @@ function Bar({ label, v, color, marker }: { label: string; v: number; color: str
         )}
       </div>
       <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-        <N v={v} fmt={(n) => pct(n)} />
+        <CountUp v={v} fmt={(n) => pct(n)} />
       </span>
     </div>
   );
@@ -162,7 +161,7 @@ function Big({ label, v, sub }: { label: string; v: number; sub: string }) {
     <div style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "12px 14px" }}>
       <div style={{ fontSize: 12, color: "var(--text-3)" }}>{label}</div>
       <div className="display" style={{ fontSize: 26, marginTop: 2, color: v < 0 ? "#8a5300" : "var(--text-1)" }}>
-        <N v={v} fmt={(n) => `${brl(n)}`} />
+        <CountUp v={v} fmt={(n) => `${brl(n)}`} />
         <span style={{ fontSize: 13, color: "var(--text-3)", letterSpacing: 0 }}> /ano</span>
       </div>
       <div style={{ fontSize: 12, color: "var(--text-2)" }}>{sub}</div>

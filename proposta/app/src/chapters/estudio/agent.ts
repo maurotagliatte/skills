@@ -35,11 +35,13 @@ export const PEDIDOS: Record<Aba, string> = {
   slides: "Aula 1: introdução à biomecânica do posterior",
 };
 
-/** O frontend manda "[aba] pedido" em req.text. */
-export function lerPedido(text?: string): { aba: Aba; pedido: string } {
-  const m = (text ?? "").match(/^\[(documento|arte|slides)\]\s*([\s\S]*)$/);
-  const aba = (m?.[1] as Aba) ?? "documento";
-  return { aba, pedido: (m?.[2] ?? "").trim() || PEDIDOS[aba] };
+const ABAS: readonly Aba[] = ["documento", "arte", "slides"];
+
+/** O frontend manda a aba em req.options.aba e o pedido em req.text. */
+export function lerPedido(req: AgentRequest): { aba: Aba; pedido: string } {
+  const opt = req.options?.aba as Aba | undefined;
+  const aba = opt && ABAS.includes(opt) ? opt : "documento";
+  return { aba, pedido: (req.text ?? "").trim() || PEDIDOS[aba] };
 }
 
 const str = { type: "string" };
@@ -104,7 +106,7 @@ export const agent: ChapterAgent = {
     },
   ],
   prompt: (req) => {
-    const { aba, pedido } = lerPedido(req.text);
+    const { aba, pedido } = lerPedido(req);
     const nome = { documento: "Documento", arte: "Arte para Instagram", slides: "Slide deck" }[aba];
     return `Aba: ${nome}. Use a ferramenta ${TOOL_POR_ABA[aba]}.\n\nPedido da Dra. Gabriela:\n"""${pedido}"""`;
   },
@@ -112,7 +114,7 @@ export const agent: ChapterAgent = {
 };
 
 function demoPara(req: AgentRequest): DemoStep[] {
-  const { aba } = lerPedido(req.text);
+  const { aba } = lerPedido(req);
   const fala: Record<Aba, string> = {
     documento: "Termo pronto, com o cabeçalho e a marca d'água da clínica. Dá para imprimir ou salvar em PDF.",
     arte: "Arte pronta no tamanho do feed (1080×1350). As camadas ficam editáveis se quiser trocar a foto.",

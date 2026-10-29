@@ -228,19 +228,6 @@
   color: var(--text-inv);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
-.textarea {
-  width: 100%;
-  resize: none;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border-dark);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-inv);
-  line-height: 1.5;
-  outline: none;
-}
-.textarea:focus { border-color: #4a4d50; }
-
 /* ——— Slides ——— */
 .thumb {
   display: grid;

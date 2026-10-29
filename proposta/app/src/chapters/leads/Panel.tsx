@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { AppWindow, AgentRow, Chip, Cursor } from "@/kit";
-import { N } from "./anim";
+import { AppWindow, AgentRow, Chip, Cursor, CountUp } from "@/kit";
 import { NAV, ICONS } from "./Board";
 import { ORIGENS, TOTAL_LEADS, metricas, type OrigemId } from "./data";
 
@@ -80,7 +79,7 @@ export function Panel({ destaque, apontando, status = "idle", show }: PanelState
                   </span>
                 </span>
                 <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                  <N v={show ? o.leads : 0} fmt={(n) => Math.round(n).toString()} ms={1200} />
+                  <CountUp v={show ? o.leads : 0} fmt={(n) => Math.round(n).toString()} ms={1200} />
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 16 }}>
                   <span style={{ flex: 1, height: 6, borderRadius: 4, background: "#eef0f0", overflow: "hidden" }}>

@@ -7,10 +7,10 @@ import { IconFileText, IconBrandInstagram, IconPresentation, IconSparkles, IconR
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, AgentRow, Avatar, Chip, Cursor } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, AgentRow, Avatar, Chip, Cursor, SpecRow, LiveCard, TextField, useReveal } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { EXEMPLO_ARTE, PEDIDOS, TOOL_POR_ABA, type Aba, type Arte, type Deck, type Documento } from "./agent";
-import { EQUIPE, SpecRow, useReveal, type Membro, type Status } from "./equipe";
+import { EQUIPE, type Membro, type Status } from "./equipe";
 import { DocumentoView, docAvailable, docStatus } from "./Documento";
 import { ArteEditor, arteAvailable, arteStatus } from "./Arte";
 import { SlidesView, slidesAvailable, slidesStatus } from "./Slides";
@@ -58,8 +58,8 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
   const cueIdx = CUES.indexOf(cue);
 
   // cena: conversa com a Donna e editor com os especialistas
-  const chat = useReveal(4, 700, true, "chat");
-  const sceneArte = useReveal(5, 760, cueIdx >= 1, "cena");
+  const chat = useReveal(4, 700, { key: "chat", lead: 0.4 });
+  const sceneArte = useReveal(5, 760, { active: cueIdx >= 1, key: "cena", lead: 0.4 });
 
   // ao vivo
   const shownAba = run?.aba ?? aba;
@@ -68,7 +68,7 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
   const toolDone = !!call?.done && agent.run.status !== "running";
   const available =
     shownAba === "documento" ? docAvailable(args as Partial<Documento>) : shownAba === "arte" ? arteAvailable(args as Partial<Arte>) : slidesAvailable(args as Partial<Deck>);
-  const n = useReveal(available, RITMO[shownAba], !!run, run?.key ?? 0);
+  const n = useReveal(available, RITMO[shownAba], { active: !!run, key: run?.key ?? 0, lead: 0.4 });
   const complete = toolDone && n >= available && available > 0;
   const statuses: Status[] = !run
     ? []
@@ -78,16 +78,17 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
         ? arteStatus(args as Partial<Arte>, n, toolDone)
         : slidesStatus(args as Partial<Deck>, n, toolDone);
 
+  // o card "Sua vez" só aparece quando a câmera para
   const toPause = async () => {
-    setPhase("pause");
     await stage.current?.goTo(LIVE_SHOT);
+    setPhase("pause");
   };
 
   const submit = (demo: boolean) => {
     const text = pedidos[aba].trim() || PEDIDOS[aba];
     setRun({ aba, text, key: ++runSeq.current });
     setPhase("live");
-    agent.start({ chapter: "estudio", text: `[${aba}] ${text}`, demo });
+    agent.start({ chapter: "estudio", text, options: { aba }, demo });
   };
 
   const outraPeca = () => {
@@ -164,12 +165,12 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
               </button>
             ))}
           </div>
-          <textarea
-            className={css.textarea}
+          <TextField
             rows={3}
             value={pedidos[aba]}
-            onChange={(e) => setPedidos((p) => ({ ...p, [aba]: e.target.value }))}
-            aria-label="Pedido para a Donna"
+            onChange={(v) => setPedidos((p) => ({ ...p, [aba]: v }))}
+            label="Pedido para a Donna"
+            style={{ borderRadius: 10 }}
           />
           <p style={{ margin: "10px 0 16px", color: "var(--text-inv-2)", lineHeight: 1.5 }}>
             {aba === "documento" && "Sai em A4, com o cabeçalho e a marca d'água da clínica, pronto para imprimir."}
@@ -185,16 +186,20 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
       </Overlay>
 
       <Overlay show={phase === "live"}>
-        <div style={{ width: 380, padding: 20, borderRadius: 16, background: "rgba(17,18,18,.86)", backdropFilter: "blur(24px)", border: "1px solid var(--border-dark)", color: "var(--text-inv)" }}>
+        <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span className="eyebrow">Pedido · {ABAS.find((t) => t.id === run?.aba)?.short}</span>
             <ModeTag mode={agent.run.mode} />
           </div>
           <p style={{ margin: "0 0 12px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>“{run?.text}”</p>
           <div style={{ borderTop: "1px solid var(--border-dark)", paddingTop: 6 }}>
-            <DonnaDark done={complete} />
+            <AgentRow list dark status={complete ? "entregue" : "orquestrando…"} done={complete}>
+              Dividiu o pedido e chamou a equipe
+            </AgentRow>
             {statuses.map((s) => (
-              <SpecRow key={s.who} s={s} dark />
+              <SpecRow key={s.who} name={s.who} color={EQUIPE[s.who].color} state={s.state} dark>
+                {s.text}
+              </SpecRow>
             ))}
           </div>
           {complete && agent.run.text && (
@@ -212,7 +217,7 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
               </Button>
             </motion.div>
           )}
-        </div>
+        </LiveCard>
       </Overlay>
 
       <Overlay show={phase === "scope"}>
@@ -231,24 +236,6 @@ export default function EstudioChapter({ onNext }: ChapterProps) {
         />
       </Overlay>
     </>
-  );
-}
-
-function DonnaDark({ done }: { done: boolean }) {
-  return (
-    <div style={{ display: "flex", gap: 10, padding: "8px 0" }}>
-      <Avatar name="Donna" color="var(--k-red)" size={22} />
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <b style={{ fontWeight: 600 }}>Donna</b>
-          <span className="mono" style={{ fontSize: 9, padding: "1px 5px", borderRadius: 4, background: "var(--dark-3)", color: "var(--text-inv-2)", border: "1px solid var(--border-dark)" }}>
-            AGENTE
-          </span>
-          <span style={{ marginLeft: "auto", fontWeight: 500, color: done ? "#7ee2a8" : "var(--amber)" }}>{done ? "entregue" : "orquestrando…"}</span>
-        </div>
-        <div style={{ marginTop: 2, color: "var(--text-inv-2)" }}>Dividiu o pedido e chamou a equipe</div>
-      </div>
-    </div>
   );
 }
 

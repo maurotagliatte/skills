@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import type { Icon } from "@tabler/icons-react";
 import { IconSearch, IconStethoscope, IconSchool, IconFileText, IconCash, IconCheck, IconRefresh, IconArrowRight } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, Chip } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, Chip, LiveCard, TextField, Suggestions, useReveal } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { EXEMPLOS, type Resultado } from "./agent";
 import { CORPUS, CLUSTERS, byId, type Tipo } from "./corpus";
@@ -45,17 +45,6 @@ function vec(id: string) {
   }).join(" ");
 }
 
-function useStep(total: number, ms: number, active: boolean, key: string | number) {
-  const [st, setSt] = useState({ key, n: 0 });
-  const n = st.key === key ? st.n : 0;
-  useEffect(() => {
-    if (!active || n >= total) return;
-    const t = setTimeout(() => setSt({ key, n: n + 1 }), ms);
-    return () => clearTimeout(t);
-  }, [n, total, ms, active, key]);
-  return active ? Math.min(n, total) : 0;
-}
-
 export default function BuscaChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
   const [phase, setPhase] = useState<Phase>("scene");
@@ -68,17 +57,18 @@ export default function BuscaChapter({ onNext }: ChapterProps) {
   const agent = useAgent();
   const cueIdx = CUES.indexOf(cue);
 
-  const indexados = useStep(INDEX_ROWS.length, 330, true, "idx");
+  const indexados = useReveal(INDEX_ROWS.length, 330, { key: "idx" });
 
   const call = agent.tool("resultados");
   const raw = ((call?.args as { itens?: Partial<Resultado>[] } | undefined)?.itens ?? []) as Partial<Resultado>[];
   const itens = raw.filter((r): r is Resultado => !!r?.id && !!byId[r.id]).map((r) => ({ ...r, score: typeof r.score === "number" ? r.score : 0 }));
-  const shown = useStep(itens.length, 480, !!query, runKey);
+  const shown = useReveal(itens.length, 480, { active: !!query, key: runKey });
   const finished = agent.run.status === "done" && shown >= itens.length;
 
+  // o card "Sua vez" só aparece quando a câmera para
   const toPause = async () => {
-    setPhase("pause");
     await stage.current?.goTo(LIVE_SHOT);
+    setPhase("pause");
   };
 
   const buscar = (text: string, demo: boolean) => {
@@ -181,34 +171,8 @@ export default function BuscaChapter({ onNext }: ChapterProps) {
               buscar(input, false);
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid var(--border-dark)", background: "rgba(255,255,255,.04)" }}>
-              <IconSearch size={16} color="var(--text-inv-2)" />
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                aria-label="Busca"
-                style={{ flex: 1, minWidth: 0, background: "none", border: 0, outline: "none", color: "var(--text-inv)" }}
-              />
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "12px 0 14px" }}>
-              {EXEMPLOS.map((ex) => (
-                <button
-                  key={ex}
-                  type="button"
-                  onClick={() => setInput(ex)}
-                  style={{
-                    padding: "4px 10px",
-                    borderRadius: 99,
-                    border: "1px solid var(--border-dark)",
-                    background: ex === input ? "var(--dark-3)" : "transparent",
-                    color: ex === input ? "var(--text-inv)" : "var(--text-inv-2)",
-                    fontSize: 12,
-                  }}
-                >
-                  {ex}
-                </button>
-              ))}
-            </div>
+            <TextField value={input} onChange={setInput} icon={IconSearch} label="Busca" />
+            <Suggestions variant="pills" items={EXEMPLOS} value={input} onPick={setInput} style={{ margin: "12px 0 14px" }} />
             <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.5 }}>
               Escreva do seu jeito: “aquele potro que mancava”, “aula do jarrete”. A busca entende o assunto.
             </p>
@@ -218,7 +182,7 @@ export default function BuscaChapter({ onNext }: ChapterProps) {
       </Overlay>
 
       <Overlay show={phase === "live"}>
-        <div style={{ width: 380, padding: 20, borderRadius: 16, background: "rgba(17,18,18,.86)", backdropFilter: "blur(24px)", border: "1px solid var(--border-dark)", color: "var(--text-inv)" }}>
+        <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span className="eyebrow">Busca</span>
             <ModeTag mode={agent.run.mode} />
@@ -243,7 +207,7 @@ export default function BuscaChapter({ onNext }: ChapterProps) {
               </Button>
             </motion.div>
           )}
-        </div>
+        </LiveCard>
       </Overlay>
 
       <Overlay show={phase === "scope"}>

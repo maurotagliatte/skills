@@ -212,29 +212,58 @@ export function Button({
 
 /* ——— Agente ——— */
 
+export type AgentState = "aguardando" | "trabalhando" | "pronto";
+
+/**
+ * Linha de agente: avatar na cor dele, nome, badge AGENTE e status (âmbar trabalhando, verde concluído).
+ * `list` = linha densa de uma lista (sem recuo, status à direita); `dark` = sobre card escuro;
+ * `waiting` = na fila (esmaecida).
+ */
 export function AgentRow({
   name = "Donna",
+  color = "var(--k-red)",
   status,
   done,
+  waiting,
+  list,
+  dark,
   children,
 }: {
   name?: string;
+  color?: string;
   status: string;
   done?: boolean;
+  waiting?: boolean;
+  list?: boolean;
+  dark?: boolean;
   children?: ReactNode;
 }) {
+  const statusClass = waiting ? s.statusWaiting : done ? s.statusDone : s.statusWorking;
   return (
-    <div className={s.agentRow}>
-      <Avatar name={name} color="var(--k-red)" size={22} />
+    <div className={cx(s.agentRow, list && s.agentRowList, waiting && s.agentRowWaiting, dark && s.agentRowDark)}>
+      <Avatar name={name} color={color} size={22} />
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <b style={{ fontWeight: 600 }}>{name}</b>
           <span className={s.agentBadge}>AGENTE</span>
-          <span className={done ? s.statusDone : s.statusWorking}>{status}</span>
+          <span className={statusClass} style={list ? { marginLeft: "auto", whiteSpace: "nowrap" } : undefined}>
+            {status}
+          </span>
         </div>
-        {children && <div style={{ marginTop: 4, color: "var(--text-2)" }}>{children}</div>}
+        {children && <div className={s.agentText} style={{ marginTop: list ? 2 : 4 }}>{children}</div>}
       </div>
     </div>
+  );
+}
+
+const SPEC_STATUS: Record<AgentState, string> = { aguardando: "na fila", trabalhando: "trabalhando…", pronto: "pronto" };
+
+/** Especialista chamado pela Donna, numa lista de equipe: cor do cursor dele e estado na fila. */
+export function SpecRow({ name, color, state, dark, children }: { name: string; color: string; state: AgentState; dark?: boolean; children?: ReactNode }) {
+  return (
+    <AgentRow name={name} color={color} status={SPEC_STATUS[state]} done={state === "pronto"} waiting={state === "aguardando"} list dark={dark}>
+      {children}
+    </AgentRow>
   );
 }
 
@@ -339,3 +368,5 @@ export function PauseCard({
 }
 
 export { cx };
+export { V, CountUp, useCountUp, useReveal, type VProps, type RevealOptions } from "./motion";
+export { LiveCard, Slider, TextField, Suggestions, MicLevel } from "./dark";

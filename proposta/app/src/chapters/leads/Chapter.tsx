@@ -6,11 +6,10 @@ import { IconSparkles, IconArrowRight } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, LiveCard, useReveal } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { Board } from "./Board";
 import { Panel, type PanelState } from "./Panel";
-import { useSteps } from "./anim";
 import { LEADS, ORIGENS, TOTAL_LEADS } from "./data";
 import type { Analise } from "./agent";
 
@@ -31,7 +30,7 @@ export default function LeadsChapter({ onNext }: ChapterProps) {
   const [phase, setPhase] = useState<Phase>("scene");
   const [cue, setCue] = useState("quadro");
   const agent = useAgent();
-  const chegaram = useSteps(true, LEADS.length, 420);
+  const chegaram = useReveal(LEADS.length, 420);
   const call = agent.tool("analisar_leads");
   const a = (call?.args ?? {}) as Partial<Analise>;
   const insights = (a.insights ?? []).filter((i) => i && i.titulo);
@@ -44,9 +43,10 @@ export default function LeadsChapter({ onNext }: ChapterProps) {
     }
   }, [phase, agent.run.status]);
 
+  // o card "Sua vez" só aparece quando a câmera para
   const toPause = async () => {
-    setPhase("pause");
     await stage.current?.goTo(LIVE_SHOT);
+    setPhase("pause");
   };
   const pedir = (demo: boolean) => {
     setPhase("live");
@@ -92,19 +92,7 @@ export default function LeadsChapter({ onNext }: ChapterProps) {
       </Overlay>
 
       <Overlay show={phase === "live"}>
-        <div
-          style={{
-            width: 400,
-            maxHeight: "calc(100vh - 200px)",
-            overflow: "hidden",
-            padding: 20,
-            borderRadius: 16,
-            background: "rgba(17,18,18,.88)",
-            backdropFilter: "blur(24px)",
-            border: "1px solid var(--border-dark)",
-            color: "var(--text-inv)",
-          }}
-        >
+        <LiveCard style={{ width: 400, maxHeight: "calc(100vh - 200px)", overflow: "hidden", background: "rgba(17,18,18,.88)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
             <span className="eyebrow">Análise da Donna</span>
             <ModeTag mode={agent.run.mode} />
@@ -147,7 +135,7 @@ export default function LeadsChapter({ onNext }: ChapterProps) {
               <b style={{ color: "var(--k-red)" }}>Donna:</b> {agent.run.text}
             </p>
           )}
-        </div>
+        </LiveCard>
       </Overlay>
 
       <Overlay show={phase === "scope"}>

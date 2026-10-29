@@ -5,7 +5,7 @@ import { IconSparkles, IconLink } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
 import type { ChapterProps } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, LiveCard, TextField, Suggestions } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { Posts, Organic } from "./Posts";
 import { Editor } from "./Editor";
@@ -57,9 +57,10 @@ export default function CmsChapter({ onNext }: ChapterProps) {
     return () => clearTimeout(t);
   }, [fase]);
 
+  // o card "Sua vez" só aparece quando a câmera para
   const toPause = async () => {
-    setFase("pause");
     await stage.current?.goTo(left(BOX.editor));
+    setFase("pause");
   };
   const submit = (text?: string) => {
     const t = text?.trim();
@@ -105,46 +106,8 @@ export default function CmsChapter({ onNext }: ChapterProps) {
 
       <Overlay show={fase === "pause"}>
         <PauseCard step="peça um post" title="Descreva um post que você gostaria de publicar — ou cole o link de uma página do seu site." onSkip={() => submit(undefined)}>
-          <textarea
-            value={pedido}
-            onChange={(e) => setPedido(e.target.value)}
-            rows={3}
-            placeholder="Ex.: quando fazer raio-x no exame de compra"
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid var(--border-dark)",
-              background: "rgba(255,255,255,.04)",
-              color: "var(--text-inv)",
-              outline: "none",
-              resize: "none",
-              lineHeight: 1.5,
-            }}
-          />
-          <div style={{ display: "grid", gap: 6, margin: "10px 0 12px" }}>
-            {SUGESTOES.map((s) => (
-              <button
-                key={s}
-                onClick={() => setPedido(s)}
-                style={{
-                  display: "flex",
-                  gap: 6,
-                  alignItems: "flex-start",
-                  textAlign: "left",
-                  padding: "7px 10px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border-dark)",
-                  background: "transparent",
-                  color: "var(--text-inv-2)",
-                  lineHeight: 1.35,
-                }}
-              >
-                {URL_RE.test(s) && <IconLink size={13} style={{ flex: "none", marginTop: 2 }} />}
-                {s}
-              </button>
-            ))}
-          </div>
+          <TextField rows={3} value={pedido} onChange={setPedido} placeholder="Ex.: quando fazer raio-x no exame de compra" />
+          <Suggestions items={SUGESTOES} onPick={setPedido} icon={(s) => (URL_RE.test(s) ? IconLink : undefined)} style={{ margin: "10px 0 12px" }} />
           <p style={{ margin: "0 0 14px", fontSize: 12, lineHeight: 1.5, color: temLink ? "#f0c36b" : "var(--text-inv-2)" }}>
             {temLink
               ? "Link detectado. Nesta demonstração a Donna não abre a página: usa o endereço como pista de tema. Ler o site inteiro entra no projeto."
@@ -159,17 +122,7 @@ export default function CmsChapter({ onNext }: ChapterProps) {
       </Overlay>
 
       <Overlay show={fase === "live" || fase === "pub"}>
-        <div
-          style={{
-            width: 380,
-            padding: 20,
-            borderRadius: 16,
-            background: "rgba(17,18,18,.86)",
-            backdropFilter: "blur(24px)",
-            border: "1px solid var(--border-dark)",
-            color: "var(--text-inv)",
-          }}
-        >
+        <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span className="eyebrow">Pedido</span>
             <ModeTag mode={agent.run.mode} />
@@ -187,7 +140,7 @@ export default function CmsChapter({ onNext }: ChapterProps) {
             </p>
           )}
           {fase === "pub" && <p style={{ margin: "12px 0 0", color: "#7ee2a8" }}>Depois da sua revisão, vai ao ar assim — com a sua marca. O painel orgânico passa a acompanhar o post.</p>}
-        </div>
+        </LiveCard>
       </Overlay>
 
       <Overlay show={fase === "scope"}>

@@ -12,8 +12,7 @@ import {
   IconCircleFilled,
   IconCircleDashed,
 } from "@tabler/icons-react";
-import { AppWindow, Chip, type NavEntry } from "@/kit";
-import { N } from "./anim";
+import { AppWindow, Chip, type NavEntry, CountUp } from "@/kit";
 import { PERFORMANCE, POSTS } from "./data";
 
 export const navCms = (active: string): NavEntry[] => [
@@ -74,7 +73,7 @@ export function Posts({ show }: { show: boolean }) {
             </span>
             <span style={{ color: "var(--text-2)" }}>{p.formato}</span>
             <span style={{ color: "var(--text-3)" }}>{p.data}</span>
-            <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{p.cliques ? <N v={show ? p.cliques : 0} fmt={num} ms={1200} /> : <Chip tone="amber">rascunho</Chip>}</span>
+            <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{p.cliques ? <CountUp v={show ? p.cliques : 0} fmt={num} ms={1200} /> : <Chip tone="amber">rascunho</Chip>}</span>
           </motion.div>
         ))}
       </div>
@@ -104,7 +103,7 @@ export function Organic({ show }: { show: boolean }) {
             <div key={k as string} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "10px 14px" }}>
               <div style={{ fontSize: 12, color: "var(--text-3)" }}>{k}</div>
               <div className="display" style={{ fontSize: 24, marginTop: 2 }}>
-                <N v={show ? (v as number) : 0} fmt={(n) => (Number(v) < 20 ? n.toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) : num(n))} ms={1300} />
+                <CountUp v={show ? (v as number) : 0} fmt={(n) => (Number(v) < 20 ? n.toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) : num(n))} ms={1300} />
                 <span style={{ fontSize: 13, color: "var(--text-3)", letterSpacing: 0 }}> {u}</span>
               </div>
             </div>

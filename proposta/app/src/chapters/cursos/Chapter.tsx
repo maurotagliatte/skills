@@ -5,13 +5,12 @@ import { IconMinus, IconPlus, IconArrowRight, IconSparkles } from "@tabler/icons
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
 import type { ChapterProps } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, LiveCard, Slider, TextField, Suggestions, useReveal } from "@/kit";
 import { useAgent } from "@/agent/useAgent";
 import { Sales } from "./Sales";
 import { Simulator } from "./Simulator";
 import { Editor, EDIT_STEPS } from "./Editor";
 import { Members } from "./Members";
-import { useSteps } from "./anim";
 import { CENARIO_PADRAO, calcular, brl, milhar, type Cenario } from "./calc";
 import { SUGESTOES_TEMA, TEMA_EXEMPLO, type Aula } from "./agent";
 
@@ -34,7 +33,8 @@ const SHOTS: Shot[] = [
 ];
 const left = (b: (typeof BOX)[keyof typeof BOX]) => frame(b, { region: "left", pad: 40, dur: 1.3 });
 
-type Fase = "scene" | "sim" | "tema" | "live" | "pub" | "scope";
+// "indo": câmera a caminho do editor, entre o simulador e o card do tema
+type Fase = "scene" | "sim" | "indo" | "tema" | "live" | "pub" | "scope";
 
 // "Pular e ver um exemplo" no simulador: os controles se movem sozinhos
 const DEMO_SIM: Partial<Cenario>[] = [{ faturamento: 900_000 }, { faturamento: 1_200_000 }, { ticket: 1497 }, { parcelado: 80 }, { faturamento: 400_000 }, { faturamento: 600_000, ticket: 997, parcelado: 60 }];
@@ -51,7 +51,8 @@ export default function CursosChapter({ onNext }: ChapterProps) {
   const agent = useAgent();
   const call = agent.tool("gerar_aula");
   const aula = (call?.args ?? {}) as Partial<Aula>;
-  const step = useSteps(fase === "live" || fase === "pub", EDIT_STEPS, 950);
+  // segue ativo no escopo: o editor continua editado atrás do cartão
+  const step = useReveal(EDIT_STEPS, 950, { active: fase === "live" || fase === "pub" || fase === "scope" });
   const agentDone = agent.run.status === "done" || agent.run.status === "error";
 
   // simulador automático
@@ -86,13 +87,15 @@ export default function CursosChapter({ onNext }: ChapterProps) {
     return () => clearTimeout(t);
   }, [fase]);
 
+  // cada card "Sua vez" só aparece quando a câmera para; o anterior sai já na partida
   const toSim = async () => {
-    setFase("sim");
     await stage.current?.goTo(left(BOX.sim));
+    setFase("sim");
   };
   const toTema = async () => {
-    setFase("tema");
+    setFase("indo");
     await stage.current?.goTo(left(BOX.editor));
+    setFase("tema");
   };
   const submit = (text?: string) => {
     const t = text?.trim();
@@ -172,20 +175,8 @@ export default function CursosChapter({ onNext }: ChapterProps) {
           <p style={{ margin: "0 0 12px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
             A gravação bruta já está no sistema. A Donna corta pausas e repetições, legenda e escreve título, descrição e capítulos a partir do tema.
           </p>
-          <input
-            value={tema}
-            onChange={(e) => setTema(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && tema.trim() && submit(tema)}
-            placeholder="Ex.: exame do cavalo de salto no piso duro"
-            style={inputStyle}
-          />
-          <div style={{ display: "grid", gap: 6, margin: "10px 0 16px" }}>
-            {SUGESTOES_TEMA.map((s) => (
-              <button key={s} onClick={() => setTema(s)} style={chipBtn}>
-                {s}
-              </button>
-            ))}
-          </div>
+          <TextField value={tema} onChange={setTema} onEnter={() => tema.trim() && submit(tema)} placeholder="Ex.: exame do cavalo de salto no piso duro" />
+          <Suggestions items={SUGESTOES_TEMA} onPick={setTema} style={{ margin: "10px 0 16px" }} />
           <div>
             <Button icon={IconSparkles} onClick={() => submit(tema)} disabled={!tema.trim()}>
               Produzir a aula
@@ -195,7 +186,7 @@ export default function CursosChapter({ onNext }: ChapterProps) {
       </Overlay>
 
       <Overlay show={fase === "live" || fase === "pub"}>
-        <div style={darkCard}>
+        <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span className="eyebrow">Tema da aula</span>
             <ModeTag mode={agent.run.mode} />
@@ -212,7 +203,7 @@ export default function CursosChapter({ onNext }: ChapterProps) {
           {fase === "pub" && (
             <p style={{ margin: "12px 0 0", color: "#7ee2a8" }}>Publicada na área de membros, no seu domínio. Os alunos do módulo recebem o aviso.</p>
           )}
-        </div>
+        </LiveCard>
       </Overlay>
 
       <Overlay show={fase === "scope"}>
@@ -234,50 +225,6 @@ export default function CursosChapter({ onNext }: ChapterProps) {
   );
 }
 
-function Slider({
-  label,
-  min,
-  max,
-  step,
-  value,
-  onChange,
-  fmt,
-  disabled,
-}: {
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onChange: (v: number) => void;
-  fmt: (v: number) => string;
-  disabled?: boolean;
-}) {
-  return (
-    <label style={{ display: "block", marginBottom: 14 }}>
-      <span style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-        <span style={{ color: "var(--text-inv-2)" }}>{label}</span>
-        <b style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{fmt(value)}</b>
-      </span>
-      <input
-        type="range"
-        aria-label={label}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{ width: "100%", accentColor: "var(--k-red)", margin: 0, cursor: disabled ? "default" : "pointer" }}
-      />
-      <span style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-inv-2)", opacity: 0.7 }}>
-        <span>{fmt(min)}</span>
-        <span>{fmt(max)}</span>
-      </span>
-    </label>
-  );
-}
-
 function Step({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
   return (
     <button
@@ -289,34 +236,3 @@ function Step({ children, onClick, disabled }: { children: React.ReactNode; onCl
     </button>
   );
 }
-
-const darkCard: React.CSSProperties = {
-  width: 380,
-  padding: 20,
-  borderRadius: 16,
-  background: "rgba(17,18,18,.86)",
-  backdropFilter: "blur(24px)",
-  border: "1px solid var(--border-dark)",
-  color: "var(--text-inv)",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  height: 38,
-  padding: "0 12px",
-  borderRadius: 8,
-  border: "1px solid var(--border-dark)",
-  background: "rgba(255,255,255,.04)",
-  color: "var(--text-inv)",
-  outline: "none",
-};
-
-const chipBtn: React.CSSProperties = {
-  textAlign: "left",
-  padding: "7px 10px",
-  borderRadius: 8,
-  border: "1px solid var(--border-dark)",
-  background: "transparent",
-  color: "var(--text-inv-2)",
-  lineHeight: 1.35,
-};

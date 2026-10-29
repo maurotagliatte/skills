@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import type { Icon } from "@tabler/icons-react";
 import {
@@ -17,7 +17,7 @@ import {
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, Chip } from "@/kit";
+import { Backdrop, Button, PauseCard, ScopeCard, AppWindow, Chip, useReveal } from "@/kit";
 import { CPA, SEMANAS_DOR, VERBA_SEMANA, brl, EMAIL, FONE_EXIBIDO, FONE_NORM, EM_HASH, PH_HASH, type Modo } from "./dados";
 
 const W = 5300;
@@ -37,16 +37,6 @@ const SHOTS: Shot[] = [
 const LIVE_SHOT: Shot = frame(BOX.sim, { region: "left", pad: 40, dur: 1.2 });
 const CUES = ["dor", "fluxo", "sim"];
 
-function useStep(total: number, ms: number, active: boolean) {
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    if (!active || n >= total) return;
-    const t = setTimeout(() => setN(n + 1), ms);
-    return () => clearTimeout(t);
-  }, [n, total, ms, active]);
-  return n;
-}
-
 export default function AtribuicaoChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
   const [phase, setPhase] = useState<Phase>("scene");
@@ -54,11 +44,12 @@ export default function AtribuicaoChapter({ onNext }: ChapterProps) {
   const [modo, setModo] = useState<Modo>("clique");
   const [tocou, setTocou] = useState(false);
   const cueIdx = CUES.indexOf(cue);
-  const fluxo = useStep(4 + PAYLOAD.length, 170, cueIdx >= 1);
+  const fluxo = useReveal(4 + PAYLOAD.length, 170, { active: cueIdx >= 1 });
 
+  // o card "Sua vez" só aparece quando a câmera para
   const toPause = async () => {
-    setPhase("pause");
     await stage.current?.goTo(LIVE_SHOT);
+    setPhase("pause");
   };
   const escolher = (m: Modo) => {
     setModo(m);
