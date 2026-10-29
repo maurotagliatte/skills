@@ -16,7 +16,18 @@ const LOGOS = {
 } as const;
 
 /** Carrega o arquivo oficial de public/brand/. Sem o arquivo, mostra um espaço reservado explícito. */
-export function BrandLogo({ brand, height, style }: { brand: keyof typeof LOGOS; height: number; style?: CSSProperties }) {
+export function BrandLogo({
+  brand,
+  height,
+  style,
+  plate,
+}: {
+  brand: keyof typeof LOGOS;
+  height: number;
+  style?: CSSProperties;
+  /** sobre fundo escuro: apresenta o logo original numa placa clara, sem alterar as cores */
+  plate?: boolean;
+}) {
   const logo = LOGOS[brand];
   const [status, setStatus] = useState<"loading" | "ok" | "missing">("loading");
   useEffect(() => {
@@ -34,7 +45,11 @@ export function BrandLogo({ brand, height, style }: { brand: keyof typeof LOGOS;
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={logo.src} alt={logo.label} style={{ height, width: "auto", ...style }} />;
+  const img = <img src={logo.src} alt={logo.label} style={{ height, width: "auto", display: "block", ...(plate ? {} : style) }} />;
+  if (!plate) return img;
+  return (
+    <span style={{ display: "inline-block", padding: height * 0.18, borderRadius: 12, background: "var(--k-paper)", ...style }}>{img}</span>
+  );
 }
 
 /* ——— Moldura fotográfica ICM ——— */

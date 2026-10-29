@@ -124,9 +124,9 @@ export default function AberturaChapter({ onNext }: ChapterProps) {
       <Overlay show={ready} side="center">
         <div style={{ textAlign: "center", color: "var(--text-inv)", width: 760, padding: "36px 40px", borderRadius: 24, background: "rgba(5,5,5,.9)", backdropFilter: "blur(20px)", border: "1px solid var(--border-dark)" }}>
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 16, marginBottom: 22 }}>
-            <BrandLogo brand="khard" height={40} />
+            <BrandLogo brand="khard" height={56} />
             <span style={{ color: "var(--text-inv-2)" }}>para</span>
-            <BrandLogo brand="guenka" height={52} />
+            <BrandLogo brand="guenka" height={64} plate />
           </div>
           <div className="eyebrow" style={{ marginBottom: 12 }}>
             Proposta · Plataforma Gabriela Guenka
