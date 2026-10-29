@@ -8,7 +8,7 @@ import { META_PP, TAXAS, brl, brlCents, milhar, num, pct, type Cenario, type Res
 const ESCALA = 12; // % máximo nas barras
 
 export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
-  const ok = r.ppLiquida >= META_PP;
+  const ok = r.pp >= META_PP;
   return (
     <AppWindow nav={[]} showSidebar={false} workspace="Simulação · taxas de venda dos cursos">
       <div style={{ padding: "18px 26px", height: "100%", display: "flex", flexDirection: "column" }}>
@@ -27,7 +27,7 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
           <Col
             title="Sua plataforma"
             sub="na sua plataforma, rodando na Cloudflare"
-            side={<PriceTag label="≈ 6,5%" pulse={`${c.faturamento}|${c.ticket}|${c.plataformaMensal}`} />}
+            side={<PriceTag label="≈ 6,5%" pulse={`${c.faturamento}|${c.ticket}`} />}
             total={r.propria}
             ef={r.efPropria}
             approx
@@ -35,7 +35,6 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
           >
             <Line label={`≈ 6,5% sobre ${brl(c.faturamento)}`} v={r.taxa} approx />
             <Line label={`Sem taxa fixa · R$ 0 × ${num(r.vendas)} vendas`} v={r.fixo} />
-            <Line label={`Plataforma ${brl(c.plataformaMensal)} × 12`} v={r.plataforma} tag="estimativa" />
             <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>≈ 6,5% por venda, já com as taxas de pagamento e os impostos da operação.</div>
           </Col>
         </div>
@@ -47,14 +46,13 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
             <span style={{ color: "var(--text-3)", fontSize: 12 }}>só recomendamos com {num(META_PP, 1)} p.p. ou mais de diferença</span>
           </div>
           <Bar label="Hotmart" v={r.efHotmart} color="#5c5f62" />
-          <Bar label="Sua (só a taxa ≈ 6,5%)" v={r.efGateway} color="#c9cbcd" approx />
-          <Bar label="Sua (com a plataforma)" v={r.efPropria} color="var(--k-red)" marker={r.efHotmart - META_PP} approx />
+          <Bar label="Sua plataforma" v={r.efPropria} color="var(--k-red)" marker={r.efHotmart - META_PP} approx />
         </div>
 
         {/* resultado */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.15fr", gap: 10, marginTop: 14 }}>
-          <Big label="Economia bruta (só taxas)" v={r.bruta} sub={`≈ ${num(r.ppBruta, 1)} p.p. abaixo`} />
-          <Big label="Economia líquida (com plataforma)" v={r.liquida} sub={r.ppLiquida >= 0 ? `≈ ${num(r.ppLiquida, 1)} p.p. abaixo` : `≈ ${num(-r.ppLiquida, 1)} p.p. acima: custa mais`} />
+          <Big label="Economia no ano" v={r.economia} sub={`≈ ${num(r.pp, 1)} p.p. abaixo da Hotmart`} />
+          <Big label="Economia por mês" v={r.economia / 12} per="mês" sub="fica com você, não com a plataforma" />
           <div
             style={{
               borderRadius: 10,
@@ -67,14 +65,10 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
               {ok ? <IconCheck size={14} /> : <IconAlertTriangle size={14} />} Cenário conservador
             </div>
             <div className="display" style={{ fontSize: 28, marginTop: 2 }}>
-              <CountUp v={r.ppLiquida} fmt={(n) => `≈ ${n >= 0 ? "−" : "+"}${num(Math.abs(n), 1)} p.p.`} />
+              <CountUp v={r.pp} fmt={(n) => `≈ ${n >= 0 ? "−" : "+"}${num(Math.abs(n), 1)} p.p.`} />
             </div>
             <div style={{ fontSize: 12 }}>
-              {ok
-                ? `já descontando a plataforma: compensa mudar`
-                : r.liquida < 0
-                  ? "neste volume, a plataforma própria ainda não se paga: não recomendamos mudar"
-                  : `diferença pequena: neste volume, mudar pode não compensar`}
+              {ok ? "na taxa efetiva sobre o faturamento: compensa mudar" : "diferença pequena: neste ticket, mudar pode não compensar"}
             </div>
           </div>
         </div>
@@ -83,14 +77,12 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
           <b style={{ color: "var(--text-1)", fontWeight: 500 }}>Numa venda de {brlCents(c.ticket)}</b>
           <span>Hotmart {brlCents(c.ticket * TAXAS.hotmart.pct + TAXAS.hotmart.fixo)}</span>
           <span>Sua ≈ {brlCents(c.ticket * TAXAS.propria.pct + TAXAS.propria.fixo)}</span>
-          <span style={{ color: "var(--text-3)" }}>+ plataforma, rateada no ano</span>
         </div>
 
         <p style={{ marginTop: "auto", marginBottom: 6, fontSize: 10.5, lineHeight: 1.5, color: "var(--text-3)" }}>
           Fontes: Hotmart, central de ajuda: 9,9% + R$ 2,49 por venda (desde 21/09/2026; confirmar o plano dela). Sua plataforma: estimativa Khard de
           ≈ 6,5% por venda, sem taxa fixa, já com as taxas de pagamento e os impostos da operação; o percentual final depende do contrato de
-          pagamento. O custo mensal da plataforma também é estimativa (hospedagem, vídeo, área de membros e antifraude) e será fechado no escopo.
-          Números a confirmar com o seu faturamento real.
+          pagamento. Números a confirmar com o seu faturamento real.
         </p>
       </div>
     </AppWindow>
@@ -128,7 +120,7 @@ function Col({
         position: "relative",
       }}
     >
-      <div style={{ marginBottom: 8, paddingRight: side ? 84 : 0, minHeight: side ? 58 : undefined }}>
+      <div style={{ marginBottom: 8, paddingRight: side ? 128 : 0, minHeight: side ? 94 : undefined }}>
         <div style={{ fontWeight: 600 }}>{title}</div>
         {sub && <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 1 }}>{sub}</div>}
       </div>
@@ -197,13 +189,13 @@ function Bar({ label, v, color, marker, approx }: { label: string; v: number; co
   );
 }
 
-function Big({ label, v, sub }: { label: string; v: number; sub: string }) {
+function Big({ label, v, sub, per = "ano" }: { label: string; v: number; sub: string; per?: string }) {
   return (
     <div style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "12px 14px" }}>
       <div style={{ fontSize: 12, color: "var(--text-3)" }}>{label}</div>
       <div className="display" style={{ fontSize: 26, marginTop: 2, color: v < 0 ? "#8a5300" : "var(--text-1)" }}>
         <CountUp v={v} fmt={(n) => `≈ ${brl(n)}`} />
-        <span style={{ fontSize: 13, color: "var(--text-3)", letterSpacing: 0 }}> /ano</span>
+        <span style={{ fontSize: 13, color: "var(--text-3)", letterSpacing: 0 }}> /{per}</span>
       </div>
       <div style={{ fontSize: 12, color: "var(--text-2)" }}>{sub}</div>
     </div>
