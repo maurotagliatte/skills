@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { IconUpload, IconDownload, IconSend, IconCash, IconFileText } from "@tabler/icons-react";
+import { IconSend, IconCash, IconFileText } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
-import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
+import { Overlay, Caption } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, Cursor, LiveCard } from "@/kit";
+import { AdvanceCard, Backdrop, Button, ScopeCard, Cursor, LiveCard } from "@/kit";
 import ThoughtLine from "@/kit/rb/ThoughtLine/ThoughtLine";
 import StatusMark from "@/kit/rb/StatusMark/StatusMark";
 import { useAgent } from "@/agent/useAgent";
@@ -14,6 +14,9 @@ import { LockScreen, type LockNotification } from "@/chapters/atendimento/LockSc
 import { Sheet } from "./Sheet";
 import { Contas, type EnvioCobranca } from "./Contas";
 import { EXEMPLOS, type Alerta, type Cobranca, type Comprovante } from "./agent";
+
+// a cobrança do Ferrador Silva, a mesma da cena
+const EXEMPLO = EXEMPLOS[0];
 
 const W = 4700;
 const H = 1500;
@@ -37,35 +40,15 @@ const ALERT_SHOT: Shot = frame(BOX.alerta, { dur: 1.6 });
 const COBRANCA_SHOT: Shot = frame(BOX.cobranca, { region: "left", pad: 40, dur: 1.6 });
 
 /**
- * scene → pause (foto) → live (lendo e lançando) → alerta (tela de bloqueio na véspera)
- * → cobranca (a Donna prepara a cobrança do Ricardo; ela envia com um toque) → scope.
+ * scene → pause ("Lançar o boleto") → live (lendo e lançando) → alerta (tela de bloqueio na véspera)
+ * → cobranca (a Donna prepara a cobrança do Ricardo; "Enviar ao Ricardo") → scope.
  * "volta" e "ida" são as viagens de câmera entre um passo e outro: nenhum card aparece com a câmera andando.
  */
 type Step = Phase | "alerta" | "ida" | "cobranca";
-type Envio = { src: string; own: boolean };
-
-/** Reduz a imagem no navegador (≤ 1600 px) e devolve um data URL JPEG. */
-async function toDataUrl(blob: Blob): Promise<string> {
-  const bmp = await createImageBitmap(blob);
-  const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
-  const c = document.createElement("canvas");
-  c.width = Math.round(bmp.width * k);
-  c.height = Math.round(bmp.height * k);
-  const ctx = c.getContext("2d")!;
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, c.width, c.height);
-  ctx.drawImage(bmp, 0, 0, c.width, c.height);
-  bmp.close();
-  return c.toDataURL("image/jpeg", 0.85);
-}
-
 export default function ContasChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
-  const file = useRef<HTMLInputElement>(null);
   const [phase, setPhase] = useState<Step>("scene");
   const [cue, setCue] = useState("antes");
-  const [envio, setEnvio] = useState<Envio | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
   const [noCelular, setNoCelular] = useState(false);
   const [cobrancaEnvio, setCobrancaEnvio] = useState<"pronta" | "enviando" | "enviada">("pronta");
   const conta = useAgent();
@@ -83,7 +66,7 @@ export default function ContasChapter({ onNext }: ChapterProps) {
 
   // passos da Donna (ThoughtLine)
   const passos: string[] = [];
-  if (envio) passos.push(envio.own ? "Lendo a sua foto" : "Lendo a foto de exemplo");
+  if (lancou) passos.push("Lendo a foto de exemplo");
   if (extr) passos.push(extr.done ? `Lançado em contas a pagar · ${novo.valor ?? ""}` : "Lançando em contas a pagar");
   if (alerta) passos.push(alerta.done ? "Aviso marcado para a véspera, às 8h" : "Marcando o aviso");
   const lendo = conta.run.status !== "done";
@@ -131,33 +114,15 @@ export default function ContasChapter({ onNext }: ChapterProps) {
     }
   }, [cobrancaEnvio, phase]);
 
-  // o card "Sua vez" só aparece quando a câmera para
+  // o primeiro card só aparece quando a câmera para
   const toPause = async () => {
     await stage.current?.goTo(LIVE_SHOT);
     setPhase("pause");
   };
 
-  const send = (src: string, own: boolean, text?: string, image?: string) => {
-    setEnvio({ src, own });
+  const lancar = () => {
     setPhase("live");
-    // com foto própria e agente ao vivo, o Claude lê a imagem; sem chave, cai no roteiro do exemplo
-    conta.start({ chapter: "contas", text, image, options: { acao: "comprovante" }, demo: !own });
-  };
-
-  const pickExample = (i: number) => {
-    const ex = EXEMPLOS[i];
-    send(ex.arquivo, false, `exemplo:${ex.id}`);
-  };
-
-  const onFile = async (f?: File) => {
-    if (!f) return;
-    try {
-      const data = await toDataUrl(f);
-      setErro(null);
-      send(data, true, undefined, data);
-    } catch {
-      setErro("Não consegui abrir essa imagem. Tente JPG ou PNG, ou escolha um exemplo.");
-    }
+    conta.start({ chapter: "contas", text: `exemplo:${EXEMPLO.id}`, options: { acao: "comprovante" }, demo: true });
   };
 
   return (
@@ -218,54 +183,19 @@ export default function ContasChapter({ onNext }: ChapterProps) {
       </Stage>
 
       <Overlay show={phase === "pause"}>
-        <PauseCard step="envie uma foto" title="Envie a foto de um boleto, recibo ou PIX." onSkip={() => pickExample(0)}>
-          <p style={{ margin: "0 0 14px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
-            Pode ser uma conta de verdade. A imagem é usada só nesta demonstração e apagada.
-          </p>
-          <input ref={file} type="file" accept="image/*" hidden aria-label="Foto do boleto, recibo ou PIX" onChange={(e) => onFile(e.target.files?.[0])} />
-          <Button icon={IconUpload} onClick={() => file.current?.click()}>
-            Enviar foto
-          </Button>
-          {erro && (
-            <p role="alert" style={{ color: "#f3a38c", margin: "10px 0 0" }}>
-              {erro}
-            </p>
-          )}
-          <div style={{ margin: "18px 0 8px", fontSize: 13, color: "var(--text-inv-2)" }}>ou use um exemplo</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-            {EXEMPLOS.map((ex, i) => (
-              <div key={ex.id} style={{ display: "grid", gap: 6 }}>
-                <button
-                  onClick={() => pickExample(i)}
-                  aria-label={`Usar o exemplo: ${ex.comprovante.fornecedor}`}
-                  className="cc-exemplo"
-                  style={{ padding: 0, border: "1px solid var(--border-dark)", borderRadius: 8, overflow: "hidden", background: "#fff", height: 78 }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={ex.arquivo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top left", display: "block" }} />
-                </button>
-                <span style={{ fontSize: 12, color: "var(--text-inv)", lineHeight: 1.25 }}>{ex.rotulo}</span>
-                <a href={ex.arquivo} download style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-inv-2)" }}>
-                  <IconDownload size={12} /> baixar
-                </a>
-              </div>
-            ))}
-          </div>
-          <style>{`.cc-exemplo{transition:transform .18s ease, border-color .18s ease}.cc-exemplo:hover{transform:translateY(-3px);border-color:#4a4d50}.cc-exemplo:active{transform:scale(.98)}.cc-exemplo:focus-visible{outline:2px solid var(--k-red);outline-offset:2px}@media (prefers-reduced-motion: reduce){.cc-exemplo{transition:none}.cc-exemplo:hover{transform:none}}`}</style>
-        </PauseCard>
+        <AdvanceCard title="A cobrança do ferrador chegou no WhatsApp." label="Lançar a conta" onAdvance={lancar}>
+          Boleto, recibo ou PIX: basta a foto.
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={phase === "live"}>
         <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <span className="eyebrow">Sua foto</span>
-            <ModeTag mode={conta.run.mode} />
+            <span className="eyebrow">A foto</span>
           </div>
           <div style={{ position: "relative", height: 190, borderRadius: 10, overflow: "hidden", background: "#fff" }}>
-            {envio && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={envio.src} alt="Foto enviada" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={EXEMPLO.arquivo} alt={EXEMPLO.rotulo} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
             {!extr?.done && (
               <motion.div
                 animate={{ top: ["2%", "96%", "2%"] }}
@@ -288,9 +218,6 @@ export default function ContasChapter({ onNext }: ChapterProps) {
               glyphColor="var(--k-red)"
             />
           </div>
-          {envio?.own && conta.run.mode === "demo" && (
-            <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--text-inv-2)" }}>Agente ao vivo desligado nesta sessão. Esta é a resposta de exemplo.</p>
-          )}
           {conta.run.text && (
             <p style={{ margin: "14px 0 0", paddingTop: 12, borderTop: "1px solid var(--border-dark)", lineHeight: 1.55 }}>
               <b style={{ color: "var(--k-red)" }}>Donna:</b> {conta.run.text}
@@ -303,7 +230,6 @@ export default function ContasChapter({ onNext }: ChapterProps) {
         <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span className="eyebrow">A outra ponta</span>
-            <ModeTag mode={cobrar.run.mode} />
           </div>
           <div className="display" style={{ fontSize: 22, marginBottom: 12 }}>
             {cobrancaEnvio === "enviada" ? "Cobrança enviada ao Ricardo." : "A cobrança do Ricardo, pronta para enviar."}
@@ -325,7 +251,7 @@ export default function ContasChapter({ onNext }: ChapterProps) {
           )}
           <div style={{ marginTop: 16, minHeight: 38, display: "flex", alignItems: "center" }}>
             {cobrancaEnvio === "pronta" ? (
-              <Button icon={IconSend} disabled={!prep?.done} onClick={() => setCobrancaEnvio("enviando")}>
+              <Button icon={IconSend} disabled={!prep?.done} onClick={() => setCobrancaEnvio("enviando")} advance>
                 Enviar ao Ricardo
               </Button>
             ) : (
@@ -339,18 +265,6 @@ export default function ContasChapter({ onNext }: ChapterProps) {
               />
             )}
           </div>
-          {cobrancaEnvio === "pronta" && (
-            <button
-              onClick={async () => {
-                setPhase("ida");
-                await stage.current?.goTo(LIVE_SHOT);
-                setPhase("scope");
-              }}
-              style={{ display: "block", marginTop: 14, background: "none", border: 0, padding: 0, color: "var(--text-inv-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
-            >
-              Pular e seguir
-            </button>
-          )}
         </LiveCard>
       </Overlay>
 

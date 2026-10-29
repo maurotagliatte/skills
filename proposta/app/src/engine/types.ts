@@ -19,8 +19,8 @@ export type Chapter = {
 /**
  * Fases de um capítulo:
  * scene → câmera roda o roteiro (vídeo)
- * pause → card "Sua vez" com a interação
- * live  → agente respondendo (AG-UI)
+ * pause → card curto com um botão de avançar (data-advance)
+ * live  → a Donna respondendo pelo roteiro (AG-UI)
  * scope → cartão "Isso entra no projeto"
  */
 export type Phase = "scene" | "pause" | "live" | "scope";

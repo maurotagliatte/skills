@@ -1,4 +1,4 @@
-// Percorre a proposta inteira como a cliente: clica "Pular e ver um exemplo" e avança.
+// Percorre a proposta inteira como a cliente: clica o botão de avançar visível ([data-advance]) e segue.
 // node proposta/tools/e2e.js <pasta-saida> [porta | URL]
 const { chromium } = require("playwright");
 const [, , out = "e2e", port = "3000"] = process.argv;
@@ -20,8 +20,8 @@ const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no
     const ch = (await p.locator("[data-chapter]").first().getAttribute("data-chapter").catch(() => "")) ?? "";
     if (ch !== last) { console.log(`${((Date.now() - t0) / 1000).toFixed(0)}s  capítulo ${ch}`); last = ch; }
     if (n++ % 3 === 0) await p.screenshot({ path: `${out}/${String(n).padStart(4, "0")}.png` });
-    const skip = p.getByText(/^Pular e /);
-    if (await skip.first().isVisible().catch(() => false)) { await skip.first().click().catch(() => {}); continue; }
+    const adv = p.locator("[data-advance]").filter({ visible: true }).first();
+    if ((await adv.count().catch(() => 0)) && (await adv.isEnabled().catch(() => false))) { await adv.click().catch(() => {}); continue; }
     let clicked = false;
     for (const name of NEXT) {
       const btn = typeof name === "string" ? p.getByRole("button", { name, exact: true }) : p.getByRole("button", { name });

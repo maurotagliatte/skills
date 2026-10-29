@@ -24,7 +24,7 @@ export const AGENT_STALL_MS = 15000;
 /**
  * Roda o agente de um capítulo via AG-UI e acumula texto, tool calls (args parciais) e estado.
  * Robustez: se o stream ficar ~15 s sem evento (ou cair com erro), aborta e refaz sozinho, uma vez,
- * com `demo: true` — a UI segue igual e o ModeTag passa a "Resposta de exemplo".
+ * com `demo: true` — a UI segue igual.
  */
 export function useAgent() {
   const [run, setRun] = useState<AgentRun>(initial);

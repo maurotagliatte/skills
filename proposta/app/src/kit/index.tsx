@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type { Icon } from "@tabler/icons-react";
-import { IconPointerFilled, IconSearch, IconSparkles } from "@tabler/icons-react";
+import { IconArrowRight, IconPointerFilled, IconSearch, IconSparkles } from "@tabler/icons-react";
 import Noise from "./rb/Noise/Noise";
 import s from "./kit.module.css";
 
@@ -212,6 +212,7 @@ export function Button({
   onClick,
   disabled,
   style,
+  advance,
 }: {
   variant?: "primary" | "ghost" | "light" | "outline";
   icon?: Icon;
@@ -219,10 +220,18 @@ export function Button({
   onClick?: () => void;
   disabled?: boolean;
   style?: CSSProperties;
+  /** botão que avança a cena (como passar um slide): leva `data-advance` (o valor, se for texto) */
+  advance?: boolean | string;
 }) {
   const v = { primary: s.btnPrimary, ghost: s.btnGhost, light: s.btnLight, outline: s.btnOutline }[variant];
   return (
-    <button className={cx(s.btn, v)} onClick={onClick} disabled={disabled} style={{ opacity: disabled ? 0.5 : 1, ...style }}>
+    <button
+      className={cx(s.btn, v)}
+      onClick={onClick}
+      disabled={disabled}
+      data-advance={advance ? (advance === true ? "" : advance) : undefined}
+      style={{ opacity: disabled ? 0.5 : 1, ...style }}
+    >
       {I && <I size={15} stroke={1.8} />}
       {children}
     </button>
@@ -343,45 +352,52 @@ export function ScopeCard({
           <span style={{ textAlign: "right" }}>{metric}</span>
         </div>
       </div>
-      <Button onClick={onNext} style={{ width: "100%" }}>
+      <Button onClick={onNext} style={{ width: "100%" }} advance="chapter">
         {nextLabel}
       </Button>
     </div>
   );
 }
 
-/* ——— Card de interação ("Sua vez") ——— */
+/* ——— Card de avanço (a cena segue com um toque, como passar um slide) ——— */
 
-export function PauseCard({
-  step,
+/**
+ * Card curto sobre a cena com um único botão de avançar (`data-advance`). Ao clicar, a cena segue
+ * e a Donna responde pelo roteiro de exemplo. `eyebrow` é opcional; o corpo (`children`) também.
+ */
+export function AdvanceCard({
+  eyebrow,
   title,
   children,
-  onSkip,
-  skipLabel = "Pular e ver um exemplo",
+  label,
+  icon = IconArrowRight,
+  onAdvance,
+  disabled,
+  style,
 }: {
-  step: string;
+  eyebrow?: string;
   title: string;
-  children: ReactNode;
-  onSkip?: () => void;
-  skipLabel?: string;
+  children?: ReactNode;
+  label: string;
+  icon?: Icon;
+  onAdvance: () => void;
+  disabled?: boolean;
+  style?: CSSProperties;
 }) {
   return (
-    <div className={s.pause}>
-      <div className="eyebrow" style={{ marginBottom: 8 }}>
-        Sua vez · {step}
-      </div>
-      <div className="display" style={{ fontSize: 22, marginBottom: 16, color: "var(--text-inv)" }}>
+    <div className={s.pause} style={style}>
+      {eyebrow && (
+        <div className="eyebrow" style={{ marginBottom: 8 }}>
+          {eyebrow}
+        </div>
+      )}
+      <div className="display" style={{ fontSize: 22, marginBottom: children ? 12 : 18, color: "var(--text-inv)" }}>
         {title}
       </div>
-      {children}
-      {onSkip && (
-        <button
-          onClick={onSkip}
-          style={{ display: "block", marginTop: 14, background: "none", border: 0, padding: 0, color: "var(--text-inv-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
-        >
-          {skipLabel}
-        </button>
-      )}
+      {children && <div style={{ marginBottom: 18, color: "var(--text-inv-2)", lineHeight: 1.55 }}>{children}</div>}
+      <Button icon={icon} onClick={onAdvance} disabled={disabled} advance>
+        {label}
+      </Button>
     </div>
   );
 }

@@ -22,11 +22,14 @@ avise no relatório final.
    elementos posicionados em absoluto. Monte os `shots` com `frame(box, { hold, dur, cue })` —
    nunca chute zoom. 8–15 s no total. `onEnd` → fase pause.
 2. **pause** — `await stage.current.goTo(frame(box, { region: "left" }))` e **só depois** `setPhase("pause")`:
-   o `<Overlay show><PauseCard …>` nunca aparece com a câmera andando. Entre dois cards, esconda o
-   anterior já na partida (fase intermediária) e mostre o próximo quando a câmera chegar.
-   Sempre com `onSkip` ("Pular e ver um exemplo").
-3. **live** — `useAgent().start({ chapter: "<id>", text | image, demo })`; leia `agent.tool("<nome>")`
-   (args parciais chegando) e desenhe a UI se preenchendo. Mostre `<ModeTag mode={agent.run.mode} />`.
+   o `<Overlay show><AdvanceCard title label onAdvance>` nunca aparece com a câmera andando. Entre dois
+   cards, esconda o anterior já na partida (fase intermediária) e mostre o próximo quando a câmera chegar.
+   A cliente não envia nada (sem gravar, enviar foto, digitar, escolher): os dados são de exemplo e há
+   **um único botão de avançar**, como passar um slide, com rótulo contextual ("Ver o relatório pronto").
+   Escolhas viram sequência guiada (2–3 passos: "Próximo modelo", "Ver o laudo"). Todo botão de avanço
+   leva `data-advance` (`<Button advance>`; o AdvanceCard e o ScopeCard já põem).
+3. **live** — `useAgent().start({ chapter: "<id>", text, options, demo: true })`; leia `agent.tool("<nome>")`
+   (args parciais chegando) e desenhe a UI se preenchendo.
 4. **scope** — `<Overlay show><ScopeCard number title items phase metric onNext />`.
 
 Peça ao agente opções do capítulo (ex.: a aba do estúdio) em `options: { … }`, não dentro de `text`.
@@ -47,7 +50,7 @@ Sem `ANTHROPIC_API_KEY` tudo roda em demo; teste nesse modo.
 - Títulos `className="display"` (Satoshi 430), eyebrow mono em vermelho Khard, corpo Inter 13 px.
 - Texto grande no mundo: `<Caption x y eyebrow title sub show>`.
 - Do kit, antes de escrever o seu: `V` (valor do agente com fade+blur), `CountUp`/`useCountUp`,
-  `useReveal` (revelar um a um), `LiveCard`, `Slider`, `TextField` + `Suggestions`, `MicLevel`, `SpecRow`.
+  `useReveal` (revelar um a um), `LiveCard`, `AdvanceCard`, `SpecRow`.
 - Agente = **Donna**: `<AgentRow>` (cor, `list`, `dark` configuráveis), `<Cursor label>` (cursor com etiqueta), badge AGENTE, status âmbar.
 - Ícones **só** de `@tabler/icons-react`. **Nunca** desenhe SVG à mão, nunca recrie logo/fonte.
   Logos: `<BrandLogo brand="khard" | "guenka">` (carrega o arquivo oficial ou mostra espaço reservado).

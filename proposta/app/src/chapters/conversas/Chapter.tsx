@@ -2,15 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { IconMicrophone, IconPlayerStopFilled, IconSend, IconUsersGroup } from "@tabler/icons-react";
+import { IconSend, IconUsersGroup } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
-import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
+import { Overlay, Caption } from "@/engine/ChapterFrame";
 import type { ChapterProps, Phase } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, LiveCard, MicLevel } from "@/kit";
+import { AdvanceCard, Backdrop, Button, ScopeCard, LiveCard } from "@/kit";
 import ThoughtLine from "@/kit/rb/ThoughtLine/ThoughtLine";
 import StatusMark from "@/kit/rb/StatusMark/StatusMark";
 import { useAgent } from "@/agent/useAgent";
-import { useRecorder } from "@/agent/useRecorder";
 import { Scattered } from "./Scattered";
 import { Inbox, type EstadoResposta } from "./Inbox";
 import { Week, paraGrade, type Activity } from "./Week";
@@ -39,8 +38,8 @@ const WEEK_SHOT: Shot = frame(BOX.semana, { region: "left", pad: 40, dur: 1.5 })
 const GRUPO_SHOT: Shot = frame(BOX.internacao, { region: "left", pad: 40, dur: 1.8 });
 
 /**
- * scene → pause (áudio) → live (rascunho + compromisso; câmera vai à semana e volta) → aprovar (um toque)
- * → grupo (quinta: a atualização da internação; um toque abre no grupo, ela confirma lá) → scope.
+ * scene → pause ("Ver a resposta da Donna") → live (rascunho + compromisso; câmera vai à semana e volta)
+ * → aprovar ("Enviar ao Ricardo") → grupo (quinta: a atualização da internação; "Enviar ao grupo") → scope.
  * "ida" é qualquer viagem de câmera: nenhum card aparece com a câmera andando.
  */
 type Step = Phase | "ida" | "aprovar" | "grupo";
@@ -49,13 +48,10 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
   const [phase, setPhase] = useState<Step>("scene");
   const [cue, setCue] = useState("antes");
-  const [transcript, setTranscript] = useState<{ text: string; example: boolean } | null>(null);
   const [envioRicardo, setEnvioRicardo] = useState<"nao" | "enviando" | "enviada">("nao");
   const [grupo, setGrupo] = useState<"pronta" | "abrindo" | "aberta">("pronta");
   const [viuSemana, setViuSemana] = useState(false);
-  const [semTranscricao, setSemTranscricao] = useState(false);
   const agent = useAgent();
-  const mic = useRecorder();
 
   const call = agent.tool("responder_conversa");
   const r = (phase !== "scene" && phase !== "pause" ? call?.args ?? {} : {}) as Partial<Resposta>;
@@ -68,7 +64,7 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
   if (call?.args && phase !== "pause") activity.push({ label: call.done ? "Reavaliação marcada, com lembrete" : "Marcando na agenda…", done: !!call.done });
 
   const passos: string[] = [];
-  if (transcript) passos.push(transcript.example ? "Áudio de exemplo" : "Áudio transcrito");
+  if (phase !== "scene" && phase !== "pause") passos.push("Áudio de exemplo");
   if (call) passos.push(r.resposta ? "Resposta escrita no seu tom" : "Escrevendo a resposta");
   if (r.evento?.hora) passos.push(`Reavaliação na quinta, às ${r.evento.hora.replace(/^0/, "").replace(":00", "h")}`);
   const pensando = agent.run.status !== "done";
@@ -115,32 +111,17 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
     setPhase("grupo");
   };
 
-  // o card "Sua vez" só aparece quando a câmera para
+  // o primeiro card só aparece quando a câmera para
   const toPause = async () => {
     await stage.current?.goTo(LIVE_SHOT);
     setPhase("pause");
   };
 
-  const submit = (text: string | undefined) => {
-    const t = text ?? EXEMPLO_TRANSCRICAO;
-    setTranscript({ text: t, example: !text });
+  const submit = () => {
     setPhase("live");
-    agent.start({ chapter: "conversas", text: t, demo: !text });
+    agent.start({ chapter: "conversas", text: EXEMPLO_TRANSCRICAO, demo: true });
   };
 
-  const onRecord = async () => {
-    if (mic.state === "recording") {
-      const t = await mic.stop();
-      if (!t) setSemTranscricao(true);
-      submit(t);
-    }
-    else if (!(await mic.start())) {
-      // sem microfone: avisa e segue com o áudio de exemplo
-      setTimeout(() => submit(undefined), 1400);
-    }
-  };
-
-  const gravando = mic.state === "recording";
   const naInternacao = phase === "ida" ? envioRicardo === "enviada" : phase === "grupo" || phase === "scope";
 
   return (
@@ -168,7 +149,7 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
           show={cue !== "antes"}
         />
         <Backdrop photo="icm-pessego" x={1500} y={560} w={1260} h={800} inset="5% 4% -2% 4%">
-          <Inbox resposta={r} estado={estado} audio={transcript && !transcript.example ? transcript.text : undefined} />
+          <Inbox resposta={r} estado={estado} />
         </Backdrop>
 
         {/* 3 · A semana: a reavaliação entra na quinta */}
@@ -193,37 +174,19 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
       </Stage>
 
       <Overlay show={phase === "pause"}>
-        <PauseCard step="responda por áudio" title="Responda o Ricardo sem digitar." onSkip={() => submit(undefined)}>
-          <p style={{ margin: "0 0 12px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
-            Fale como falaria com a sua secretária: o que responder e o que marcar. O áudio é usado só nesta demonstração e apagado.
-          </p>
-          <p style={{ margin: "0 0 16px", padding: "10px 12px", borderRadius: 10, background: "rgba(255,255,255,.05)", border: "1px solid var(--border-dark)", color: "var(--text-inv)", lineHeight: 1.5 }}>
+        <AdvanceCard title="A resposta ao Ricardo, por áudio." label="Ver a resposta da Donna" onAdvance={submit}>
+          <p style={{ margin: 0, padding: "10px 12px", borderRadius: 10, background: "rgba(255,255,255,.05)", border: "1px solid var(--border-dark)", color: "var(--text-inv)", lineHeight: 1.5 }}>
             “{EXEMPLO_TRANSCRICAO}.”
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Button icon={gravando ? IconPlayerStopFilled : IconMicrophone} onClick={onRecord} disabled={mic.state === "asking" || mic.state === "transcribing"}>
-              {gravando ? `Parar · ${mic.seconds}s` : mic.state === "asking" ? "Liberando o microfone…" : mic.state === "transcribing" ? "Transcrevendo…" : "Gravar resposta"}
-            </Button>
-            {gravando && <MicLevel level={mic.level} />}
-          </div>
-          {mic.state === "denied" && (
-            <p role="status" style={{ color: "#f3a38c", margin: "12px 0 0" }}>
-              Sem microfone. Seguimos com o áudio de exemplo.
-            </p>
-          )}
-        </PauseCard>
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={phase === "live" || phase === "aprovar"}>
         <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <span className="eyebrow">{transcript?.example ? "Áudio de exemplo" : "Seu áudio"}</span>
-            <ModeTag mode={agent.run.mode} />
+            <span className="eyebrow">Áudio de exemplo</span>
           </div>
-          {semTranscricao && (
-            <p style={{ margin: "0 0 8px", fontSize: 12, color: "var(--text-inv-2)" }}>Transcrição desligada nesta sessão. Seguimos com o áudio de exemplo.</p>
-          )}
-          <p style={{ margin: 0, color: "var(--text-inv-2)", lineHeight: 1.6, maxHeight: 130, overflow: "hidden" }}>“{transcript?.text}”</p>
+          <p style={{ margin: 0, color: "var(--text-inv-2)", lineHeight: 1.6, maxHeight: 130, overflow: "hidden" }}>“{EXEMPLO_TRANSCRICAO}”</p>
           <div style={{ marginTop: 14 }}>
             <ThoughtLine
               label="A Donna está escrevendo…"
@@ -246,17 +209,9 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
           {phase === "aprovar" && (
             <div style={{ marginTop: 16 }}>
               {envioRicardo === "nao" ? (
-                <>
-                  <Button icon={IconSend} onClick={() => setEnvioRicardo("enviando")}>
-                    Enviar ao Ricardo
-                  </Button>
-                  <button
-                    onClick={irParaGrupo}
-                    style={{ display: "block", marginTop: 14, background: "none", border: 0, padding: 0, color: "var(--text-inv-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
-                  >
-                    Pular e seguir
-                  </button>
-                </>
+                <Button icon={IconSend} onClick={() => setEnvioRicardo("enviando")} advance>
+                  Enviar ao Ricardo
+                </Button>
               ) : (
                 <StatusMark
                   status={envioRicardo === "enviada" ? "done" : "running"}
@@ -281,17 +236,9 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
             A Donna juntou as fotos e as notas da equipe. No grupo, quem confirma o envio é você: ela abre a conversa já com o texto e as fotos.
           </p>
           {grupo === "pronta" ? (
-            <>
-              <Button icon={IconUsersGroup} onClick={() => setGrupo("abrindo")}>
-                Enviar ao grupo
-              </Button>
-              <button
-                onClick={() => setPhase("scope")}
-                style={{ display: "block", marginTop: 14, background: "none", border: 0, padding: 0, color: "var(--text-inv-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
-              >
-                Pular e seguir
-              </button>
-            </>
+            <Button icon={IconUsersGroup} onClick={() => setGrupo("abrindo")} advance>
+              Enviar ao grupo
+            </Button>
           ) : (
             <StatusMark
               status={grupo === "aberta" ? "done" : "running"}

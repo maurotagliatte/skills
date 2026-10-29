@@ -1,11 +1,13 @@
 /**
- * Simulador de taxas — Hotmart × plataforma própria (gateway Asaas).
- * Fontes em proposta/referencias/REFERENCIAS.md. Tudo determinístico, sem agente.
+ * Simulador de taxas — Hotmart × plataforma própria.
+ * Hotmart: fonte em proposta/referencias/REFERENCIAS.md.
+ * Plataforma própria: estimativa Khard de ≈ 6,5% por venda, sem taxa fixa — já inclui as taxas de
+ * pagamento negociadas no mercado, a operação e os impostos do meio de campo.
+ * Tudo determinístico, sem agente.
  */
 export const TAXAS = {
   hotmart: { pct: 0.099, fixo: 2.49 },
-  asaasVista: { pct: 0.0299, fixo: 0.49 },
-  asaasParcelado: { pct: 0.0349, fixo: 0.49 },
+  propria: { pct: 0.065, fixo: 0 },
 };
 
 /** Estimativa de custo mensal da plataforma própria (hospedagem, vídeo, área de membros, antifraude). */
@@ -14,23 +16,19 @@ export const PLATAFORMA_MENSAL_PADRAO = 1500;
 /** Enquadramento comercial: a plataforma própria fica pelo menos 2,5 p.p. abaixo. */
 export const META_PP = 2.5;
 
-export type Cenario = { faturamento: number; ticket: number; parcelado: number; plataformaMensal: number };
+export type Cenario = { faturamento: number; ticket: number; plataformaMensal: number };
 
-export const CENARIO_PADRAO: Cenario = { faturamento: 600_000, ticket: 997, parcelado: 60, plataformaMensal: PLATAFORMA_MENSAL_PADRAO };
+export const CENARIO_PADRAO: Cenario = { faturamento: 600_000, ticket: 997, plataformaMensal: PLATAFORMA_MENSAL_PADRAO };
 
 export function calcular(c: Cenario) {
   const vendas = c.faturamento / c.ticket;
-  const share = c.parcelado / 100;
   const hotPct = c.faturamento * TAXAS.hotmart.pct;
   const hotFixo = vendas * TAXAS.hotmart.fixo;
   const hotmart = hotPct + hotFixo;
 
-  const baseVista = c.faturamento * (1 - share);
-  const baseParc = c.faturamento * share;
-  const vista = baseVista * TAXAS.asaasVista.pct;
-  const parc = baseParc * TAXAS.asaasParcelado.pct;
-  const fixo = vendas * TAXAS.asaasVista.fixo;
-  const gateway = vista + parc + fixo;
+  const taxa = c.faturamento * TAXAS.propria.pct;
+  const fixo = vendas * TAXAS.propria.fixo;
+  const gateway = taxa + fixo;
   const plataforma = c.plataformaMensal * 12;
   const propria = gateway + plataforma;
 
@@ -41,10 +39,7 @@ export function calcular(c: Cenario) {
     hotPct,
     hotFixo,
     hotmart,
-    baseVista,
-    baseParc,
-    vista,
-    parc,
+    taxa,
     fixo,
     gateway,
     plataforma,

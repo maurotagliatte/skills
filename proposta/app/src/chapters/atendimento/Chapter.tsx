@@ -4,39 +4,32 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import gsap from "gsap";
 import {
+  IconArrowRight,
   IconBrandGoogleDrive,
   IconBrandWhatsapp,
-  IconCalendarWeek,
   IconCalendarEvent,
   IconDeviceMobile,
   IconFileTypeDoc,
   IconFileTypePdf,
   IconFolder,
   IconMicrophone,
-  IconPencil,
   IconPhoto,
-  IconPill,
-  IconPlayerStopFilled,
-  IconScan,
   IconSparkles,
-  IconTimeline,
 } from "@tabler/icons-react";
-import type { Icon } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
-import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
+import { Overlay, Caption } from "@/engine/ChapterFrame";
 import { usePlayback } from "@/engine/playback";
 import type { ChapterProps } from "@/engine/types";
-import { AppWindow, Backdrop, Button, LiveCard, MicLevel, PauseCard, ScopeCard, TextField } from "@/kit";
+import { AdvanceCard, AppWindow, Backdrop, Button, LiveCard, ScopeCard } from "@/kit";
 import VoicePill from "@/kit/rb/VoicePill/VoicePill";
 import LatticeLoader from "@/kit/rb/LatticeLoader/LatticeLoader";
 import ThoughtLine from "@/kit/rb/ThoughtLine/ThoughtLine";
 import StatusMark from "@/kit/rb/StatusMark/StatusMark";
 import { useAgent } from "@/agent/useAgent";
-import { useRecorder } from "@/agent/useRecorder";
 import { LockScreen, type LockNotification } from "./LockScreen";
 import { Galeria, type GalCard, type Status } from "./Galeria";
 import { FolhaBilingue, FolhaClinica, FolhaEditorial, FolhaHoje, FolhaWhatsApp, type R } from "./Folha";
-import { EXEMPLO_TRANSCRICAO, nomeDoModelo, type Pedido } from "./agent";
+import { EXEMPLO_TRANSCRICAO, type Pedido } from "./agent";
 import css from "./atendimento.module.css";
 
 const W = 4700;
@@ -69,22 +62,15 @@ const DRIVE_FILES = [
 type Fase = "scene" | "pause" | "live" | "conferir" | "aprovado" | "pedido" | "live2" | "feito" | "scope";
 type Rec = "idle" | "gravando" | "donna" | "pronto";
 
-const OPCOES: { id: Pedido; icon: Icon; label: string; sub: string }[] = [
-  { id: "alta", icon: IconPill, label: "Orientações de alta", sub: "Com as prescrições para você conferir" },
-  { id: "laudo", icon: IconScan, label: "Laudo de imagem", sub: "Raio-x ou ultrassom" },
-  { id: "internacao", icon: IconCalendarWeek, label: "Atualização da internação", sub: "A semana, para o grupo" },
-  { id: "final", icon: IconTimeline, label: "Relatório final do caso", sub: "A partir do histórico" },
-  { id: "livre", icon: IconPencil, label: "Do meu jeito", sub: "Descreva o que precisa" },
+// "Precisa de outro relatório?": dois pedidos em sequência, como slides
+const PEDIDOS_VER: { id: Pedido; nome: string; sub: string; botao: string }[] = [
+  { id: "alta", nome: "Orientações de alta", sub: "Com prescrições para conferir", botao: "Ver as orientações de alta" },
+  { id: "laudo", nome: "Laudo de imagem", sub: "Raio-x e ultrassom", botao: "Ver o laudo" },
 ];
-const SUB_PEDIDO: Record<Pedido, string> = {
-  alta: "Com prescrições para conferir",
-  laudo: "Raio-x e ultrassom",
-  internacao: "Modelo da semana",
-  final: "A partir do histórico",
-  livre: "Seu modelo, guardado",
-};
+// na conferência, a galeria folheia duas das versões novas antes do ok
+const MODELOS_VER = ["clinico", "whatsapp"];
 
-type PedidoCard = { id: string; pedido: Pedido; nome: string; rel?: R };
+type PedidoCard = { id: string; pedido: Pedido; nome: string; sub: string; rel?: R };
 
 /** setTimeout que só é cancelado quando o capítulo sai (trocas de estado não cancelam a etapa seguinte). */
 function useLater() {
@@ -102,18 +88,15 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
   const [cue, setCue] = useState("antes");
   const [rec, setRec] = useState<Rec>("idle");
   const [toque, setToque] = useState(false);
-  const [transcript, setTranscript] = useState<{ text: string; example: boolean } | null>(null);
   const [rel1, setRel1] = useState<R | null>(null);
   // 0 = só o editorial; 1..6 = as três versões novas entrando (montando/pronta)
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState<Status | null>(null);
-  const [escolha, setEscolha] = useState<Pedido>("alta");
-  const [livre, setLivre] = useState("");
+  // quantas versões novas a conferência já folheou (0..MODELOS_VER.length)
+  const [vistos, setVistos] = useState(0);
   const [pedidos, setPedidos] = useState<PedidoCard[]>([]);
   const handled = useRef<string | null>(null);
-  const interagiu = useRef(false);
   const agent = useAgent();
-  const mic = useRecorder();
   const { paused } = usePlayback();
 
   const call = agent.tool("montar_relatorio");
@@ -144,10 +127,10 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
     if (agent.run.status === "error" && handled.current !== `err-${phase}`) {
       // falhou: refaz com o roteiro de exemplo, a experiência não quebra
       handled.current = `err-${phase}`;
-      if (phase === "live") agent.start({ chapter: "atendimento", text: transcript?.text, demo: true });
+      if (phase === "live") agent.start({ chapter: "atendimento", text: EXEMPLO_TRANSCRICAO, demo: true });
       if (phase === "live2") {
         const last = pedidos[pedidos.length - 1];
-        agent.start({ chapter: "atendimento", options: { pedido: last.pedido, atendimento: transcript?.text ?? "" }, text: livre, demo: true });
+        agent.start({ chapter: "atendimento", options: { pedido: last.pedido, atendimento: EXEMPLO_TRANSCRICAO }, demo: true });
       }
       return;
     }
@@ -165,45 +148,22 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
     if (phase === "live2" && handled.current !== `live2-${pedidos.length}`) {
       handled.current = `live2-${pedidos.length}`;
       const done = args;
-      setPedidos((ps) => ps.map((p, i) => (i === ps.length - 1 ? { ...p, rel: done, nome: p.pedido === "livre" ? done.nome_modelo || p.nome : p.nome } : p)));
-      interagiu.current = false;
+      setPedidos((ps) => ps.map((p, i) => (i === ps.length - 1 ? { ...p, rel: done } : p)));
       later(900, () => setPhase("feito"));
-      // sem nenhum toque dela, segue sozinho para o escopo
-      later(10500, () => {
-        if (!interagiu.current) setPhase((f) => (f === "feito" ? "scope" : f));
-      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent.run.status, phase]);
 
-  useEffect(() => {
-    if (phase !== "feito") return;
-    const mark = () => (interagiu.current = true);
-    window.addEventListener("pointerdown", mark);
-    window.addEventListener("keydown", mark);
-    return () => {
-      window.removeEventListener("pointerdown", mark);
-      window.removeEventListener("keydown", mark);
-    };
-  }, [phase]);
-
-  // o card "Sua vez" só aparece quando a câmera para
+  // o primeiro card só aparece quando a câmera para
   const toPause = async () => {
     await stage.current?.goTo(LIVE_SHOT);
     setPhase("pause");
   };
 
-  const submit = (text: string | undefined) => {
-    const t = text ?? EXEMPLO_TRANSCRICAO;
-    setTranscript({ text: t, example: !text });
+  const submit = () => {
     setStatus("andamento");
     setPhase("live");
-    agent.start({ chapter: "atendimento", text: t, demo: !text });
-  };
-
-  const onRecord = async () => {
-    if (mic.state === "recording") submit(await mic.stop());
-    else if (!(await mic.start())) later(1600, () => submit(undefined));
+    agent.start({ chapter: "atendimento", text: EXEMPLO_TRANSCRICAO, demo: true });
   };
 
   const aprovar = () => {
@@ -212,17 +172,13 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
     later(2600, () => setPhase("pedido"));
   };
 
-  const pedir = (p: Pedido) => {
-    const texto = p === "livre" ? livre.trim() || "relatório para o treinador, sem termos técnicos" : undefined;
-    const nome = p === "livre" ? nomeDoModelo(texto ?? "") : OPCOES.find((o) => o.id === p)!.label;
-    setPedidos((ps) => [...ps, { id: `pedido-${ps.length}`, pedido: p, nome }]);
+  const proximoPedido = PEDIDOS_VER[pedidos.length];
+  const pedir = () => {
+    const p = PEDIDOS_VER[pedidos.length];
+    if (!p) return;
+    setPedidos((ps) => [...ps, { id: `pedido-${ps.length}`, pedido: p.id, nome: p.nome, sub: p.sub }]);
     setPhase("live2");
-    agent.start({
-      chapter: "atendimento",
-      options: { pedido: p, atendimento: transcript?.text ?? EXEMPLO_TRANSCRICAO },
-      text: texto,
-      demo: (transcript?.example ?? true) && p !== "livre",
-    });
+    agent.start({ chapter: "atendimento", options: { pedido: p.id, atendimento: EXEMPLO_TRANSCRICAO }, demo: true });
   };
 
   /* ——— cards da galeria (só crescem: novos vão para o fim da pilha) ——— */
@@ -259,14 +215,14 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
     cards.push({
       id: p.id,
       nome: p.nome,
-      sub: SUB_PEDIDO[p.pedido],
+      sub: p.sub,
       grupo: "donna",
       state: running ? "running" : "done",
       saida: "pdf",
       folha: <FolhaEditorial r={running ? args : (p.rel ?? {})} />,
     });
   });
-  const focus = pedidos.length ? pedidos[pedidos.length - 1].id : undefined;
+  const focus = pedidos.length ? pedidos[pedidos.length - 1].id : vistos ? MODELOS_VER[vistos - 1] : undefined;
 
   /* ——— passos da Donna, em palavras dela ——— */
   const steps1 = ["Ouvi o áudio do Trovão"];
@@ -371,28 +327,17 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
       </Stage>
 
       <Overlay show={phase === "pause"}>
-        <PauseCard step="grave um atendimento" title="Fale como falaria no haras." onSkip={() => submit(undefined)}>
-          <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
-            Diga qual é o animal, o que você viu e o que fez. Uns 30 segundos bastam. O áudio é usado só nesta demonstração e apagado.
-          </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Button icon={mic.state === "recording" ? IconPlayerStopFilled : IconMicrophone} onClick={onRecord} disabled={mic.state === "asking" || mic.state === "transcribing"}>
-              {mic.state === "recording" ? `Parar · ${mic.seconds}s` : mic.state === "asking" ? "Liberando o microfone…" : mic.state === "transcribing" ? "Ouvindo…" : "Gravar"}
-            </Button>
-            {mic.state === "recording" && <MicLevel level={mic.level} />}
-          </div>
-          {mic.state === "denied" && <p style={{ color: "#f3a38c", margin: "12px 0 0" }}>Sem microfone. Seguimos com o áudio de exemplo do Trovão.</p>}
-        </PauseCard>
+        <AdvanceCard title="O áudio do Trovão, gravado no haras." label="Ver o relatório pronto" onAdvance={submit}>
+          Uns 30 segundos: qual é o animal, o que você viu e o que fez.
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={phase === "live"}>
         <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-            <span className="eyebrow">{transcript?.example ? "Áudio de exemplo" : "O que você falou"}</span>
-            <ModeTag mode={agent.run.mode} />
+            <span className="eyebrow">Áudio de exemplo</span>
           </div>
-          <p className={css.transcript}>“{transcript?.text}”</p>
-          {!transcript?.example && agent.run.mode === "demo" && <p className={css.note}>Agente ao vivo desligado nesta sessão. Esta é a resposta de exemplo.</p>}
+          <p className={css.transcript}>“{EXEMPLO_TRANSCRICAO}”</p>
           <div className={css.thought}>
             <ThoughtLine
               label="A Donna está montando o relatório"
@@ -419,7 +364,6 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
         <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span className="eyebrow">{phase === "aprovado" ? "Aprovado" : "Em conferência"}</span>
-            <ModeTag mode={agent.run.mode} />
           </div>
           {phase === "conferir" ? (
             <>
@@ -432,12 +376,15 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
               <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
                 Nada vai ao Ricardo sem o seu ok. Na galeria, ao lado do seu modelo de hoje, ficaram três versões novas com os mesmos dados.
               </p>
-              <Button icon={IconBrandWhatsapp} onClick={aprovar}>
-                Aprovar e enviar ao Ricardo
-              </Button>
-              <button className={css.linkBtn} onClick={aprovar}>
-                Pular e aprovar o exemplo
-              </button>
+              {vistos < MODELOS_VER.length ? (
+                <Button icon={IconArrowRight} onClick={() => setVistos((v) => v + 1)} advance>
+                  Próximo modelo
+                </Button>
+              ) : (
+                <Button icon={IconBrandWhatsapp} onClick={aprovar} advance>
+                  Aprovar e enviar ao Ricardo
+                </Button>
+              )}
             </>
           ) : (
             <div className={css.wa} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 0 }}>
@@ -451,47 +398,15 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
       </Overlay>
 
       <Overlay show={phase === "pedido"}>
-        <PauseCard step="peça outro modelo" title="Precisa de outro relatório?" onSkip={() => pedir("alta")}>
-          <p style={{ margin: "0 0 14px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>Peça o modelo que quiser. A Donna monta e preenche com este atendimento.</p>
-          <div className={css.options} role="radiogroup" aria-label="Modelo">
-            {OPCOES.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                role="radio"
-                aria-checked={escolha === o.id}
-                className={`${css.option} ${escolha === o.id ? css.optionOn : ""}`}
-                onClick={() => setEscolha(o.id)}
-              >
-                <o.icon size={16} style={{ marginTop: 2 }} />
-                <span>
-                  {o.label}
-                  <span className={css.optionSub}>{o.sub}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-          {escolha === "livre" && (
-            <TextField
-              value={livre}
-              onChange={setLivre}
-              label="Como você quer o relatório"
-              placeholder="Ex.: relatório para o treinador, sem termos técnicos"
-              onEnter={() => pedir("livre")}
-              style={{ marginBottom: 12 }}
-            />
-          )}
-          <Button icon={IconSparkles} onClick={() => pedir(escolha)}>
-            Montar o modelo
-          </Button>
-        </PauseCard>
+        <AdvanceCard title="Precisa de outro relatório?" label={PEDIDOS_VER[0].botao} onAdvance={pedir}>
+          A Donna monta o modelo e preenche com este atendimento.
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={phase === "live2" || phase === "feito"}>
         <LiveCard>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
             <span className="eyebrow">Pedido</span>
-            <ModeTag mode={agent.run.mode} />
           </div>
           <ThoughtLine
             label="A Donna está montando o modelo"
@@ -503,7 +418,7 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
             showTimer={false}
             fontSize={14}
             color="#f6f6f6"
-              glyphColor="var(--k-red)"
+            glyphColor="var(--k-red)"
           />
           {agent.run.text && (
             <p className={css.donna}>
@@ -511,11 +426,16 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
             </p>
           )}
           {phase === "feito" && (
-            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-              <Button onClick={() => setPhase("scope")}>Seguir</Button>
-              <Button variant="ghost" onClick={() => setPhase("pedido")}>
-                Pedir outro modelo
-              </Button>
+            <div style={{ marginTop: 16 }}>
+              {proximoPedido ? (
+                <Button icon={IconArrowRight} onClick={pedir} advance>
+                  {proximoPedido.botao}
+                </Button>
+              ) : (
+                <Button icon={IconArrowRight} onClick={() => setPhase("scope")} advance>
+                  Seguir
+                </Button>
+              )}
             </div>
           )}
         </LiveCard>

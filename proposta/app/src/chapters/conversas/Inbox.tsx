@@ -75,7 +75,7 @@ const LIST_VARS = {
 /** Estado da resposta ao Ricardo: rascunho chegando, para ela aprovar, enviada. */
 export type EstadoResposta = "escrevendo" | "aprovar" | "enviada";
 
-export function Inbox({ resposta, estado, audio }: { resposta?: Partial<Resposta>; estado?: EstadoResposta; audio?: string }) {
+export function Inbox({ resposta, estado }: { resposta?: Partial<Resposta>; estado?: EstadoResposta }) {
   const aberta = !!estado;
   return (
     <AppWindow nav={NAV}>
@@ -93,7 +93,7 @@ export function Inbox({ resposta, estado, audio }: { resposta?: Partial<Resposta
           <Coluna titulo="Clientes" n={CLIENTES.length} icon={<IconUser size={15} />}>
             <Lista
               itens={CLIENTES}
-              render={(c) => (c.id === "ricardo" && aberta ? <Thread resposta={resposta ?? {}} estado={estado!} audio={audio} /> : <Tile c={c} />)}
+              render={(c) => (c.id === "ricardo" && aberta ? <Thread resposta={resposta ?? {}} estado={estado!} /> : <Tile c={c} />)}
             />
           </Coluna>
           <Coluna titulo="Alunos" n={ALUNOS.length} icon={<IconSchool size={15} />}>
@@ -175,7 +175,7 @@ function Tile({ c }: { c: Conversa }) {
 }
 
 /** A conversa do Ricardo aberta: a pergunta dele, o seu áudio, o rascunho da Donna e o compromisso. */
-function Thread({ resposta, estado, audio }: { resposta: Partial<Resposta>; estado: EstadoResposta; audio?: string }) {
+function Thread({ resposta, estado }: { resposta: Partial<Resposta>; estado: EstadoResposta }) {
   const ev = resposta.evento;
   const msgs: AnimatedListEntry[] = [
     { id: "pergunta", title: "pergunta" },
@@ -223,7 +223,7 @@ function Thread({ resposta, estado, audio }: { resposta: Partial<Resposta>; esta
               <Bolha lado="dir" meta="você · agora" tom="audio">
                 <span style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                   <IconMicrophone size={14} style={{ flex: "none", marginTop: 2 }} />
-                  <span>Áudio para a Donna{audio ? `: “${audio.length > 90 ? `${audio.slice(0, 88)}…` : audio}”` : ""}</span>
+                  <span>Áudio para a Donna</span>
                 </span>
               </Bolha>
             );

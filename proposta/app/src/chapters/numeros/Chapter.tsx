@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "motion/react";
-import { IconSparkles, IconArrowRight, IconRefresh } from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
-import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
+import { Overlay, Caption } from "@/engine/ChapterFrame";
 import type { ChapterProps } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, LiveCard, TextField, Suggestions, useReveal } from "@/kit";
+import { AdvanceCard, Backdrop, Button, ScopeCard, LiveCard, useReveal } from "@/kit";
 import ThoughtLine from "@/kit/rb/ThoughtLine/ThoughtLine";
-import RubberSegment from "@/kit/rb/RubberSegment/RubberSegment";
 import { useAgent } from "@/agent/useAgent";
 import { Board } from "./Board";
 import { Painel, type PainelStatus } from "./Painel";
 import { Simulacao } from "./Simulacao";
 import { PESSOAS, TOTAL, type Modo, type Periodo } from "./data";
 import { PERGUNTAS, perguntaDe, type Resposta } from "./agent";
-import css from "./numeros.module.css";
 
 const W = 5900;
 const H = 1400;
@@ -28,7 +26,8 @@ const SHOTS: Shot[] = [frame(BOX.abertura, { hold: 5.2, cue: "quadro" }), frame(
 const left = (b: (typeof BOX)[keyof typeof BOX]) => frame(b, { region: "left", pad: 40, dur: 1.3 });
 
 const PASSOS = [`Separando as ${TOTAL} pessoas por origem`, "Cruzando com quem comprou", "Montando o gráfico"];
-const AVISO_DEMO = "Agente ao vivo desligado nesta sessão. Esta é a resposta de exemplo.";
+// as perguntas mostradas em sequência, como slides (as duas primeiras do roteiro)
+const SEQUENCIA = PERGUNTAS.slice(0, 2);
 
 // "indo": câmera a caminho da simulação, entre um card e outro
 type Fase = "scene" | "pergunta" | "live" | "indo" | "ensinar" | "scope";
@@ -37,8 +36,8 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
   const [fase, setFase] = useState<Fase>("scene");
   const [cue, setCue] = useState("quadro");
-  const [texto, setTexto] = useState("");
-  const [enviado, setEnviado] = useState<{ text: string; exemplo: boolean; proprio: boolean } | null>(null);
+  // índice da pergunta em SEQUENCIA (-1 antes da primeira)
+  const [atual, setAtual] = useState(-1);
   const [modo, setModo] = useState<Modo>("conversa");
   const [periodo, setPeriodo] = useState<Periodo>("semana");
   const [tocou, setTocou] = useState(false);
@@ -48,46 +47,31 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
   const r = (call?.args ?? {}) as Partial<Resposta>;
   const running = agent.run.status === "running";
   const done = agent.run.status === "done" || agent.run.status === "error";
-  const passos = useReveal(PASSOS.length, 800, { active: fase === "live", key: enviado?.text ?? "", lead: 0.3 });
+  const pergunta = SEQUENCIA[atual]?.texto;
+  const passos = useReveal(PASSOS.length, 800, { active: fase === "live", key: pergunta ?? "", lead: 0.3 });
 
   const status: PainelStatus = fase === "scene" || fase === "pergunta" ? (r.resposta ? "pronto" : "idle") : r.resposta ? "pronto" : "lendo";
-
-  // exemplo pulado: depois da resposta, segue sozinho para o interruptor
-  useEffect(() => {
-    if (fase !== "live" || !done || !enviado?.exemplo) return;
-    const t = setTimeout(() => toEnsinar(), 5200);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fase, done, enviado]);
 
   const toPergunta = async () => {
     await stage.current?.goTo(left(BOX.painel));
     setFase("pergunta");
   };
-  const perguntar = (t: string, exemplo: boolean) => {
-    const text = t.trim() || PERGUNTAS[0].texto;
-    const preset = PERGUNTAS.find((p) => p.texto === text);
-    setEnviado({ text, exemplo, proprio: !preset });
+  const perguntar = (i: number) => {
+    const text = SEQUENCIA[i].texto;
+    setAtual(i);
     setFase("live");
-    agent.start({ chapter: "numeros", text, options: { pergunta: perguntaDe({ text }) }, demo: exemplo });
+    agent.start({ chapter: "numeros", text, options: { pergunta: perguntaDe({ text }) }, demo: true });
   };
-  const outraPergunta = () => {
-    setTexto("");
-    setFase("pergunta");
-  };
+  const proxima = atual + 1 < SEQUENCIA.length;
   const toEnsinar = async () => {
     setFase("indo");
     await stage.current?.goTo(left(BOX.sim));
     setFase("ensinar");
   };
-  const escolher = (m: Modo) => {
-    setModo(m);
+  const ensinar = () => {
+    setModo("venda");
     setTocou(true);
-  };
-  const exemploEnsinar = () => {
-    escolher("venda");
     setTimeout(() => setPeriodo("mes"), 2200);
-    setTimeout(() => setFase("scope"), 5200);
   };
 
   return (
@@ -118,28 +102,17 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
       </Stage>
 
       <Overlay show={fase === "pergunta"}>
-        <PauseCard step="pergunte" title="O que você quer saber dos seus números?" onSkip={() => perguntar(PERGUNTAS[0].texto, true)}>
-          <p style={{ margin: "0 0 12px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
-            A Donna lê as {TOTAL} pessoas que chegaram nos últimos 30 dias (dados de exemplo) e responde em português.
-          </p>
-          <TextField value={texto} onChange={setTexto} onEnter={() => texto.trim() && perguntar(texto, false)} label="Sua pergunta" placeholder="Escreva ou escolha uma pergunta" />
-          <Suggestions items={PERGUNTAS.map((p) => p.texto)} onPick={setTexto} style={{ margin: "10px 0 16px" }} />
-          <div>
-            <Button icon={IconSparkles} onClick={() => perguntar(texto, false)} disabled={!texto.trim()}>
-              Perguntar à Donna
-            </Button>
-          </div>
-        </PauseCard>
+        <AdvanceCard title={`“${SEQUENCIA[0].texto}”`} label="Ver a resposta" onAdvance={() => perguntar(0)}>
+          A Donna lê as {TOTAL} pessoas que chegaram nos últimos 30 dias (dados de exemplo) e responde em português.
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={fase === "live"}>
         <LiveCard style={{ width: 400 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-            <span className="eyebrow">Sua pergunta</span>
-            <ModeTag mode={agent.run.mode} />
+            <span className="eyebrow">A pergunta</span>
           </div>
-          <p style={{ margin: "0 0 14px", lineHeight: 1.5, fontSize: 15 }}>“{enviado?.text}”</p>
-          {enviado?.proprio && agent.run.mode === "demo" && <p style={{ margin: "0 0 12px", color: "#f0c36b", fontSize: 12, lineHeight: 1.5 }}>{AVISO_DEMO}</p>}
+          <p style={{ margin: "0 0 14px", lineHeight: 1.5, fontSize: 15 }}>“{pergunta}”</p>
           <div style={{ paddingTop: 12, borderTop: "1px solid var(--border-dark)" }}>
             <ThoughtLine
               label={PASSOS[Math.max(0, passos - 1)]}
@@ -159,67 +132,30 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
               <p style={{ margin: 0, lineHeight: 1.5 }}>
                 <b style={{ color: "var(--k-red)" }}>Donna:</b> {agent.run.text} A sugestão ficou embaixo do gráfico, para você aprovar.
               </p>
-              {!enviado?.exemplo && (
-                <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-                  <Button variant="ghost" icon={IconRefresh} onClick={outraPergunta}>
-                    Outra pergunta
+              <div style={{ marginTop: 16 }}>
+                {proxima ? (
+                  <Button icon={IconArrowRight} onClick={() => perguntar(atual + 1)} advance>
+                    Próxima pergunta
                   </Button>
-                  <Button icon={IconArrowRight} onClick={toEnsinar} style={{ flex: 1 }}>
+                ) : (
+                  <Button icon={IconArrowRight} onClick={toEnsinar} advance>
                     Ensinar o anúncio
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </motion.div>
           )}
         </LiveCard>
       </Overlay>
 
       <Overlay show={fase === "ensinar"}>
-        <PauseCard step="ligue" title="Ensinar o anúncio com quem comprou" onSkip={tocou ? undefined : exemploEnsinar}>
-          <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>
-            Hoje o anúncio aprende com quem abre conversa. Ligado, ele recebe de volta quem fechou a matrícula e passa a procurar gente parecida.
-          </p>
-          <div style={{ display: "grid", gap: 12, marginBottom: 16 }}>
-            <span style={{ color: "var(--text-inv-2)" }}>O anúncio aprende</span>
-            <RubberSegment
-              aria-label="Com o que o anúncio aprende"
-              items={[
-                { value: "conversa", label: "Com quem chama" },
-                { value: "venda", label: "Com quem compra" },
-              ]}
-              value={modo}
-              onChange={(v) => escolher(v as Modo)}
-              trackColor="var(--dark-2)"
-              thumbColor={modo === "venda" ? "var(--k-red)" : "#f6f6f6"}
-              textColor="var(--text-inv-2)"
-              activeTextColor={modo === "venda" ? "#fff" : "var(--text-1)"}
-              size="lg"
-              className={css.segFull}
-            />
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <span style={{ color: "var(--text-inv-2)" }}>Ver por</span>
-              <RubberSegment
-                aria-label="Período do gráfico"
-                items={[
-                  { value: "semana", label: "Semana" },
-                  { value: "mes", label: "Mês" },
-                ]}
-                value={periodo}
-                onChange={(v) => setPeriodo(v as Periodo)}
-                trackColor="var(--dark-2)"
-                thumbColor="#f6f6f6"
-                textColor="var(--text-inv-2)"
-                activeTextColor="var(--text-1)"
-                size="sm"
-              />
-            </div>
-          </div>
-          <div>
-            <Button icon={IconArrowRight} onClick={() => setFase("scope")} disabled={!tocou}>
-              Ver o que entra no projeto
-            </Button>
-          </div>
-        </PauseCard>
+        <AdvanceCard
+          title="Ensinar o anúncio com quem comprou"
+          label={tocou ? "Ver o que entra no projeto" : "Ensinar com quem compra"}
+          onAdvance={tocou ? () => setFase("scope") : ensinar}
+        >
+          Hoje o anúncio aprende com quem abre conversa. Ligado, ele recebe de volta quem fechou a matrícula e passa a procurar gente parecida.
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={fase === "scope"}>

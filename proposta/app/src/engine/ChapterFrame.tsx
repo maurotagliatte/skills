@@ -139,26 +139,3 @@ export function Caption({
     </motion.div>
   );
 }
-
-/** Etiqueta "Ao vivo" / "Exemplo" — sempre honesta sobre o que está rodando. */
-export function ModeTag({ mode }: { mode: "live" | "demo" | undefined }) {
-  if (!mode) return null;
-  const live = mode === "live";
-  return (
-    <span
-      className="mono"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        fontSize: 10,
-        letterSpacing: "0.08em",
-        textTransform: "uppercase",
-        color: live ? "#7ee2a8" : "var(--text-inv-2)",
-      }}
-    >
-      <span style={{ width: 6, height: 6, borderRadius: 9, background: live ? "#2fd27a" : "var(--k-gray)" }} />
-      {live ? "Agente ao vivo" : "Resposta de exemplo"}
-    </span>
-  );
-}

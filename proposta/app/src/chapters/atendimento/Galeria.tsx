@@ -104,15 +104,14 @@ export function Galeria({ cards, status, focus }: { cards: GalCard[]; status: St
             {list.map(({ c, i }, k) => (
               <div key={c.id}>
                 {(k === 0 || list[k - 1].c.grupo !== c.grupo) && <div className={css.group}>{c.grupo === "hoje" ? "Hoje" : "Feitos pela Donna"}</div>}
-                <motion.button
-                  type="button"
+                <motion.div
                   role="tab"
                   aria-selected={i === top}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.35 }}
                   className={`${css.tab} ${i === top ? css.tabOn : ""}`}
-                  onClick={() => bring(i)}
+                  style={{ cursor: "default" }}
                 >
                   <span className={css.tabIcon}>
                     {c.state === "static" ? (
@@ -130,7 +129,7 @@ export function Galeria({ cards, status, focus }: { cards: GalCard[]; status: St
                       {c.state !== "static" && c.state !== "done" ? ` · ${MARK_TEXT[c.state]}` : ""}
                     </span>
                   </span>
-                </motion.button>
+                </motion.div>
               </div>
             ))}
           </div>

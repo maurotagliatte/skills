@@ -198,36 +198,6 @@
   background: var(--text-1);
 }
 
-/* abas no card escuro */
-.darkTabs {
-  display: flex;
-  gap: 4px;
-  padding: 3px;
-  border-radius: 10px;
-  background: var(--dark-2);
-  border: 1px solid var(--border-dark);
-  margin-bottom: 14px;
-}
-.darkTab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 30px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--text-inv-2);
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.darkTabActive {
-  background: var(--dark-3);
-  color: var(--text-inv);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
 /* ——— Slides ——— */
 .thumb {
   display: grid;

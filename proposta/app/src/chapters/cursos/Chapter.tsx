@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { IconMinus, IconPlus, IconArrowRight } from "@tabler/icons-react";
+import { useRef, useState } from "react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
 import { Overlay, Caption } from "@/engine/ChapterFrame";
 import type { ChapterProps } from "@/engine/types";
-import { Backdrop, Button, PauseCard, ScopeCard, LiveCard, Slider } from "@/kit";
+import { AdvanceCard, Backdrop, Button, ScopeCard, LiveCard } from "@/kit";
 import { Sales } from "./Sales";
 import { Simulator } from "./Simulator";
 import { Members } from "./Members";
-import { CENARIO_PADRAO, calcular, brl, milhar, type Cenario } from "./calc";
+import { CENARIO_PADRAO, calcular, brl, milhar } from "./calc";
 
 const W = 5800;
 const H = 1400;
@@ -32,49 +32,14 @@ const left = (b: (typeof BOX)[keyof typeof BOX]) => frame(b, { region: "left", p
 // "indo": câmera a caminho da área de membros, entre o simulador e o card seguinte
 type Fase = "scene" | "sim" | "indo" | "membros" | "scope";
 
-// "Pular e ver um exemplo": os controles se movem sozinhos, inclusive um cenário em que não compensa
-const DEMO_SIM: Partial<Cenario>[] = [
-  { faturamento: 900_000 },
-  { faturamento: 1_200_000 },
-  { ticket: 1497 },
-  { parcelado: 80 },
-  { faturamento: 150_000, ticket: 497 },
-  { faturamento: 150_000, ticket: 497 },
-  { faturamento: 600_000, ticket: 997, parcelado: 60 },
-];
+// cenário fixo: os valores padrão do simulador
+const C = CENARIO_PADRAO;
+const RESULTADO = calcular(C);
 
 export default function CursosChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
   const [fase, setFase] = useState<Fase>("scene");
   const [cue, setCue] = useState("painel");
-  const [c, setC] = useState<Cenario>(CENARIO_PADRAO);
-  const [demoSim, setDemoSim] = useState(false);
-  const [exemplo, setExemplo] = useState(false);
-  const r = useMemo(() => calcular(c), [c]);
-
-  // simulador automático
-  useEffect(() => {
-    if (!demoSim) return;
-    let i = 0;
-    const id = setInterval(() => {
-      if (i < DEMO_SIM.length) setC((p) => ({ ...p, ...DEMO_SIM[i++] }));
-      else {
-        clearInterval(id);
-        setDemoSim(false);
-        toMembros();
-      }
-    }, 1000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demoSim]);
-
-  // no exemplo, a área de membros segue sozinha para o cartão
-  useEffect(() => {
-    if (fase !== "membros" || !exemplo) return;
-    const t = setTimeout(() => setFase("scope"), 4800);
-    return () => clearTimeout(t);
-  }, [fase, exemplo]);
-
   // cada card só aparece quando a câmera para; o anterior sai já na partida
   const toSim = async () => {
     await stage.current?.goTo(left(BOX.sim));
@@ -85,8 +50,6 @@ export default function CursosChapter({ onNext }: ChapterProps) {
     await stage.current?.goTo(left(BOX.membros));
     setFase("membros");
   };
-
-  const set = (k: keyof Cenario) => (v: number) => setC((p) => ({ ...p, [k]: v }));
 
   return (
     <>
@@ -113,7 +76,7 @@ export default function CursosChapter({ onNext }: ChapterProps) {
           show={cue === "sim" || fase !== "scene"}
         />
         <Backdrop photo="icm-dourado" x={BOX.sim.x} y={BOX.sim.y} w={BOX.sim.w} h={BOX.sim.h} inset="5% 4% -2% 4%">
-          <Simulator c={c} r={r} />
+          <Simulator c={C} r={RESULTADO} />
         </Backdrop>
 
         <Backdrop photo="icm-areia" x={BOX.membros.x} y={BOX.membros.y} w={BOX.membros.w} h={BOX.membros.h} inset="5% 4% -2% 4%">
@@ -122,42 +85,13 @@ export default function CursosChapter({ onNext }: ChapterProps) {
       </Stage>
 
       <Overlay show={fase === "sim"}>
-        <PauseCard
-          step="simule"
-          title="Ajuste ao tamanho dos seus cursos."
-          onSkip={
-            demoSim
-              ? undefined
-              : () => {
-                  setExemplo(true);
-                  setDemoSim(true);
-                }
-          }
-        >
-          <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>Os valores iniciais são exemplo. Com os seus números, a conta fica exata.</p>
-          <Slider label="Faturamento anual com cursos" min={100_000} max={3_000_000} step={50_000} value={c.faturamento} onChange={set("faturamento")} fmt={milhar} disabled={demoSim} />
-          <Slider label="Ticket médio" min={197} max={2997} step={50} value={c.ticket} onChange={set("ticket")} fmt={brl} disabled={demoSim} />
-          <Slider label="Vendas parceladas (2–6x)" min={0} max={100} step={5} value={c.parcelado} onChange={set("parcelado")} fmt={(v) => `${v}%`} disabled={demoSim} />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "4px 0 18px" }}>
-            <span style={{ color: "var(--text-inv-2)" }}>
-              Custo da sua plataforma <span style={{ color: "#f0c36b" }}>· estimativa</span>
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Step label="Diminuir o custo da plataforma" onClick={() => set("plataformaMensal")(Math.max(500, c.plataformaMensal - 250))} disabled={demoSim}>
-                <IconMinus size={12} />
-              </Step>
-              <span style={{ minWidth: 92, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{brl(c.plataformaMensal)}/mês</span>
-              <Step label="Aumentar o custo da plataforma" onClick={() => set("plataformaMensal")(Math.min(5000, c.plataformaMensal + 250))} disabled={demoSim}>
-                <IconPlus size={12} />
-              </Step>
-            </span>
+        <AdvanceCard title="Um ano de turmas, nas duas plataformas." label="Ver a área de membros" onAdvance={toMembros}>
+          <p style={{ margin: "0 0 14px" }}>Os valores são exemplo. Com os seus números, a conta fica exata.</p>
+          <div style={{ display: "grid", gap: 8, paddingTop: 12, borderTop: "1px solid var(--border-dark)" }}>
+            <Row label="Faturamento anual com cursos" value={milhar(C.faturamento)} />
+            <Row label="Ticket médio" value={brl(C.ticket)} />
           </div>
-          <div>
-            <Button icon={IconArrowRight} onClick={toMembros} disabled={demoSim}>
-              Ver a área de membros
-            </Button>
-          </div>
-        </PauseCard>
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={fase === "membros"}>
@@ -169,11 +103,9 @@ export default function CursosChapter({ onNext }: ChapterProps) {
             A aula do Trovão, no seu endereço e com o seu logo.
           </p>
           <p style={{ margin: "0 0 16px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>Os alunos atuais mudam junto, sem perder acesso.</p>
-          {!exemplo && (
-            <Button icon={IconArrowRight} onClick={() => setFase("scope")}>
-              Ver o que entra no projeto
-            </Button>
-          )}
+          <Button icon={IconArrowRight} onClick={() => setFase("scope")} advance>
+            Ver o que entra no projeto
+          </Button>
         </LiveCard>
       </Overlay>
 
@@ -183,7 +115,7 @@ export default function CursosChapter({ onNext }: ChapterProps) {
           title="Seus cursos na sua plataforma"
           items={[
             "Área de membros e página de venda no seu endereço",
-            "Pagamento por cartão, parcelado e Pix, com taxa de gateway",
+            "Pagamento por cartão, parcelado e Pix, a ≈ 6,5% por venda e sem taxa fixa",
             "Alunos e cursos atuais trazidos da Hotmart, sem perder acesso",
             "Certificado e comunidade da turma",
           ]}
@@ -197,15 +129,11 @@ export default function CursosChapter({ onNext }: ChapterProps) {
   );
 }
 
-function Step({ children, onClick, disabled, label }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; label: string }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      style={{ width: 24, height: 24, display: "grid", placeItems: "center", borderRadius: 6, border: "1px solid var(--border-dark)", background: "transparent", color: "var(--text-inv)" }}
-    >
-      {children}
-    </button>
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+      <span>{label}</span>
+      <span style={{ color: "var(--text-inv)", fontVariantNumeric: "tabular-nums" }}>{value}</span>
+    </div>
   );
 }

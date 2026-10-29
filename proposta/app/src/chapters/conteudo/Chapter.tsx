@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
 import type { Icon } from "@tabler/icons-react";
 import {
   IconMovie,
   IconArticle,
   IconBrandInstagram,
   IconPresentation,
-  IconSparkles,
-  IconRefresh,
   IconArrowRight,
   IconLayoutDashboard,
   IconSchool,
@@ -17,9 +14,9 @@ import {
   IconCalendarEvent,
 } from "@tabler/icons-react";
 import { Stage, frame, type Shot, type StageHandle } from "@/engine/Stage";
-import { Overlay, Caption, ModeTag } from "@/engine/ChapterFrame";
+import { Overlay, Caption } from "@/engine/ChapterFrame";
 import type { ChapterProps } from "@/engine/types";
-import { AppWindow, Avatar, Backdrop, Button, PauseCard, ScopeCard, LiveCard, SpecRow, TextField, useReveal, type NavEntry } from "@/kit";
+import { AdvanceCard, AppWindow, Avatar, Backdrop, Button, ScopeCard, LiveCard, SpecRow, useReveal, type NavEntry } from "@/kit";
 import ThoughtLine from "@/kit/rb/ThoughtLine/ThoughtLine";
 import { useAgent } from "@/agent/useAgent";
 import { EXEMPLO_ARTE, EXEMPLO_AULA, EXEMPLO_POST, PEDIDOS, TOOL_POR_ABA, type Aba, type Arte, type Aula, type Deck, type Post } from "./agent";
@@ -50,12 +47,14 @@ const SHOTS: Shot[] = [
 const LIVE_SHOT: Shot = frame(BOX.pedido, { region: "left", pad: 40, dur: 1.4 });
 const CUES = ["aula", "post", "arte"];
 
-const ABAS: { id: Aba; label: string; icon: Icon; nota: string }[] = [
-  { id: "aula", label: "Aula", icon: IconMovie, nota: "Sai legendada e com capítulos, pronta para a área de membros." },
-  { id: "post", label: "Post", icon: IconArticle, nota: "Sai escrito para aparecer no Google, com a sua revisão antes de ir ao ar." },
-  { id: "arte", label: "Arte", icon: IconBrandInstagram, nota: "Sai no tamanho do feed, com camadas editáveis." },
-  { id: "slides", label: "Slides", icon: IconPresentation, nota: "Sai com as cores e o logo da sua identidade visual." },
+const ABAS: { id: Aba; label: string; icon: Icon }[] = [
+  { id: "aula", label: "Aula", icon: IconMovie },
+  { id: "post", label: "Post", icon: IconArticle },
+  { id: "arte", label: "Arte", icon: IconBrandInstagram },
+  { id: "slides", label: "Slides", icon: IconPresentation },
 ];
+// as peças do pedido da semana, uma a uma, como slides
+const SEQUENCIA: Aba[] = ["aula", "slides"];
 
 const PASSOS: Record<Aba, string[]> = {
   aula: ["Cortando pausas e repetições", "Gerando as legendas", "Escrevendo título, descrição e capítulos"],
@@ -63,8 +62,8 @@ const PASSOS: Record<Aba, string[]> = {
   arte: ["Dividindo o pedido", "Chamando a equipe", "Montando as camadas"],
   slides: ["Dividindo o pedido", "Chamando a equipe", "Montando os slides"],
 };
+const ROTULO: Record<Aba, string> = { aula: "a aula", post: "o post", arte: "a arte", slides: "os slides" };
 const RITMO: Record<Aba, number> = { aula: 950, post: 900, arte: 1000, slides: 800 };
-const AVISO_DEMO = "Agente ao vivo desligado nesta sessão. Esta é a resposta de exemplo.";
 
 const NAV_AULA: NavEntry[] = [
   { icon: IconLayoutDashboard, label: "Início" },
@@ -81,9 +80,7 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
   const stage = useRef<StageHandle>(null);
   const [fase, setFase] = useState<Fase>("scene");
   const [cue, setCue] = useState("aula");
-  const [aba, setAba] = useState<Aba>("aula");
-  const [pedidos, setPedidos] = useState<Record<Aba, string>>(PEDIDOS);
-  const [run, setRun] = useState<{ aba: Aba; text: string; key: number; exemplo: boolean; proprio: boolean } | null>(null);
+  const [run, setRun] = useState<{ i: number; aba: Aba; text: string; key: number } | null>(null);
   const agent = useAgent();
   const seq = useRef(0);
   const cueIdx = CUES.indexOf(cue);
@@ -93,7 +90,7 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
   const cenaArte = useReveal(5, 520, { active: cueIdx >= 2, key: "cena-arte", lead: 0.3 });
 
   // ao vivo
-  const shown = run?.aba ?? aba;
+  const shown = run?.aba ?? SEQUENCIA[0];
   const call = run ? agent.tool(TOOL_POR_ABA[run.aba]) : undefined;
   const args = (call?.args ?? {}) as Record<string, unknown>;
   const toolDone = !!call?.done && agent.run.status !== "running";
@@ -110,13 +107,6 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
         ? arteStatus(args as Partial<Arte>, n, toolDone)
         : slidesStatus(args as Partial<Deck>, n, toolDone);
 
-  // pedido de exemplo: depois da entrega, segue sozinho para o cartão
-  useEffect(() => {
-    if (fase !== "live" || !complete || !run?.exemplo) return;
-    const t = setTimeout(() => setFase("scope"), 4600);
-    return () => clearTimeout(t);
-  }, [fase, complete, run]);
-
   useEffect(() => {
     if (agent.run.status === "error") setFase("pause");
   }, [agent.run.status]);
@@ -125,19 +115,13 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
     await stage.current?.goTo(LIVE_SHOT);
     setFase("pause");
   };
-  const submit = (exemplo: boolean) => {
-    const text = pedidos[aba].trim() || PEDIDOS[aba];
-    setRun({ aba, text, key: ++seq.current, exemplo, proprio: text !== PEDIDOS[aba] });
+  const pedir = (i: number) => {
+    const aba = SEQUENCIA[i];
+    setRun({ i, aba, text: PEDIDOS[aba], key: ++seq.current });
     setFase("live");
-    agent.start({ chapter: "conteudo", text, options: { aba }, demo: exemplo });
+    agent.start({ chapter: "conteudo", text: PEDIDOS[aba], options: { aba }, demo: true });
   };
-  const outraPeca = () => {
-    const i = ABAS.findIndex((a) => a.id === run?.aba);
-    setAba(ABAS[(i + 1) % ABAS.length].id);
-    setRun(null);
-    agent.reset();
-    setFase("pause");
-  };
+  const proxima = run && run.i + 1 < SEQUENCIA.length ? run.i + 1 : null;
 
   const passos = PASSOS[shown];
 
@@ -201,33 +185,17 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
       </Stage>
 
       <Overlay show={fase === "pause"}>
-        <PauseCard step="peça à Donna" title="O que você quer pronto esta semana?" onSkip={() => submit(true)}>
-          <div className={css.darkTabs} role="tablist" aria-label="Tipo de peça">
-            {ABAS.map((t) => (
-              <button key={t.id} role="tab" aria-selected={t.id === aba} className={`${css.darkTab} ${t.id === aba ? css.darkTabActive : ""}`} onClick={() => setAba(t.id)}>
-                <t.icon size={14} stroke={1.7} />
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <TextField rows={3} value={pedidos[aba]} onChange={(v) => setPedidos((p) => ({ ...p, [aba]: v }))} label="Pedido para a Donna" style={{ borderRadius: 10 }} />
-          <p style={{ margin: "10px 0 16px", color: "var(--text-inv-2)", lineHeight: 1.5 }}>{ABAS.find((t) => t.id === aba)?.nota}</p>
-          <div>
-            <Button icon={IconSparkles} onClick={() => submit(false)}>
-              Pedir à Donna
-            </Button>
-          </div>
-        </PauseCard>
+        <AdvanceCard title="O pedido da semana, para a Donna." label="Ver as peças" onAdvance={() => pedir(0)}>
+          “{PEDIDOS[SEQUENCIA[0]]}”
+        </AdvanceCard>
       </Overlay>
 
       <Overlay show={fase === "live"}>
         <LiveCard style={{ width: 400 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span className="eyebrow">Pedido · {ABAS.find((t) => t.id === run?.aba)?.label}</span>
-            <ModeTag mode={agent.run.mode} />
           </div>
           <p style={{ margin: "0 0 12px", color: "var(--text-inv-2)", lineHeight: 1.55 }}>“{run?.text}”</p>
-          {run?.proprio && agent.run.mode === "demo" && <p style={{ margin: "0 0 12px", color: "#f0c36b", fontSize: 12, lineHeight: 1.5 }}>{AVISO_DEMO}</p>}
           <div style={{ borderTop: "1px solid var(--border-dark)", paddingTop: 12 }}>
             <ThoughtLine
               label={passos[Math.max(0, passo - 1)]}
@@ -256,15 +224,18 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
               <b style={{ color: "var(--k-red)" }}>Donna:</b> {agent.run.text}
             </p>
           )}
-          {complete && !run?.exemplo && (
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", gap: 8, marginTop: 16 }}>
-              <Button variant="ghost" icon={IconRefresh} onClick={outraPeca}>
-                Pedir outra peça
-              </Button>
-              <Button icon={IconArrowRight} onClick={() => setFase("scope")} style={{ flex: 1 }}>
-                Continuar
-              </Button>
-            </motion.div>
+          {complete && (
+            <div style={{ marginTop: 16 }}>
+              {proxima !== null ? (
+                <Button icon={IconArrowRight} onClick={() => pedir(proxima)} advance>
+                  {`Ver ${ROTULO[SEQUENCIA[proxima]]}`}
+                </Button>
+              ) : (
+                <Button icon={IconArrowRight} onClick={() => setFase("scope")} advance>
+                  Continuar
+                </Button>
+              )}
+            </div>
           )}
         </LiveCard>
       </Overlay>

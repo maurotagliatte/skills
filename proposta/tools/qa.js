@@ -1,7 +1,9 @@
 // QA visual de um capítulo: node proposta/tools/qa.js <capitulo> <pasta-saida> [porta] [segundos]
-// Tira um print a cada 1,5 s; clica em "Pular e ver um exemplo" quando o card aparece.
+// Tira um print a cada 1,5 s e clica no botão de avançar visível ([data-advance]), sem sair do capítulo
+// (o "Próximo…" do cartão de escopo leva data-advance="chapter" e fica de fora).
 const { chromium } = require("playwright");
 const [, , chapter = "abertura", out = "qa", port = "3000", secs = "40"] = process.argv;
+const ADVANCE = '[data-advance]:not([data-advance="chapter"])';
 (async () => {
   const fs = require("fs");
   fs.mkdirSync(out, { recursive: true });
@@ -14,8 +16,8 @@ const [, , chapter = "abertura", out = "qa", port = "3000", secs = "40"] = proce
   for (let t = 0; t < Number(secs); t += 1.5) {
     await p.waitForTimeout(1500);
     await p.screenshot({ path: `${out}/${String(Math.round(t * 10)).padStart(4, "0")}.png` });
-    const skip = p.getByText(/^Pular e /);
-    if (await skip.isVisible().catch(() => false)) await skip.click().catch(() => {});
+    const adv = p.locator(ADVANCE).filter({ visible: true }).first();
+    if ((await adv.count().catch(() => 0)) && (await adv.isEnabled().catch(() => false))) await adv.click().catch(() => {});
   }
   console.log(errs.join("\n") || "sem erros no console");
   await b.close();

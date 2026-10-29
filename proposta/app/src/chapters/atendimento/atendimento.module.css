@@ -43,8 +43,6 @@
   color: var(--text-1);
   transition: background-color 0.15s ease;
 }
-.tab:hover { background: #f2f1ef; }
-.tab:focus-visible { outline: 2px solid var(--gg-wine); outline-offset: -2px; }
 .tabOn,
 .tabOn:hover { background: #f3eceb; }
 .tabOn .tabName { color: var(--gg-wine); }
@@ -114,39 +112,6 @@
 .stackBox :global(.stack) { outline: none; }
 
 /* ——— Cards escuros (pausas e ao vivo) ——— */
-.options {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-.option {
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  gap: 9px;
-  align-items: start;
-  text-align: left;
-  padding: 9px 11px;
-  border-radius: 10px;
-  border: 1px solid var(--border-dark);
-  background: transparent;
-  color: var(--text-inv-2);
-  line-height: 1.35;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-.option:hover { color: var(--text-inv); border-color: #3a3d40; }
-.option:focus-visible { outline: 2px solid var(--k-red); outline-offset: 2px; }
-.optionOn,
-.optionOn:hover {
-  background: var(--dark-3);
-  border-color: #4a4d50;
-  color: var(--text-inv);
-}
-.optionSub {
-  display: block;
-  font-size: 12px;
-  color: var(--text-inv-2);
-}
-
 .wa {
   margin: 12px 0 14px;
   padding: 10px 12px;
@@ -180,22 +145,6 @@
 }
 .thought {
   margin-top: 14px;
-}
-.note {
-  margin: 10px 0 0;
-  color: var(--text-inv-2);
-  font-size: 12px;
-  line-height: 1.5;
-}
-.linkBtn {
-  display: block;
-  margin-top: 14px;
-  background: none;
-  border: 0;
-  padding: 0;
-  color: var(--text-inv-2);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 /* ——— Cena do celular ——— */
