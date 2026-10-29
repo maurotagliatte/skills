@@ -39,7 +39,7 @@ export function Proposta() {
         <div>
           <div style={{ marginBottom: 6, color: "var(--text-inv-2)", fontSize: 14 }}>Proposta para a Dra. Gabriela Guenka</div>
           <div className="display" style={{ fontSize: 32 }}>
-            Seis soluções, em três fases.
+            Oito soluções, em três fases.
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--text-inv-2)" }}>
@@ -55,8 +55,8 @@ export function Proposta() {
           <div className={s.glassInner}>
             <div className={s.halo} />
             <div className={s.haze} />
-            <span className={`${s.index} ${s.indexTop}`}>K♠ 07</span>
-            <span className={`${s.index} ${s.indexBottom}`}>K♠ 07</span>
+            <span className={`${s.index} ${s.indexTop}`}>K♠ 09</span>
+            <span className={`${s.index} ${s.indexBottom}`}>K♠ 09</span>
             <div className={s.lensArea}>
               <div className={s.lens} />
             </div>
@@ -137,14 +137,14 @@ export function Proposta() {
           <motion.div className={s.sign} style={{ marginTop: "auto" }} {...enter(2)}>
             {/* foto oficial, já redonda e com moldura própria */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/mauro-avatar.jpg" alt="Mauro Souza Tagliatti" width={84} height={84} style={{ display: "block", width: 84, height: 84, borderRadius: "50%" }} />
+            <img src="/brand/mauro-avatar.jpg" alt="Mauro Souza Tagliatte" width={84} height={84} style={{ display: "block", width: 84, height: 84, borderRadius: "50%" }} />
             <div>
               <div className="display" style={{ fontSize: 21, lineHeight: 1.3, maxWidth: 520 }}>
                 Obrigado pelo interesse, Dra. Gabriela. Vai ser uma honra conduzir este projeto com você.
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/mauro-assinatura.png" alt="Assinatura de Mauro Souza Tagliatti" className={s.signature} />
-              <div style={{ fontSize: 14 }}>Mauro Souza Tagliatti · Khard</div>
+              <img src="/brand/mauro-assinatura.png" alt="Assinatura de Mauro Souza Tagliatte" className={s.signature} />
+              <div style={{ fontSize: 14 }}>Mauro Souza Tagliatte · Khard</div>
               <p style={{ margin: "6px 0 0", color: "var(--text-inv-2)", lineHeight: 1.55, maxWidth: 540 }}>
                 Para seguir, responda a mensagem em que recebeu este link: marcamos a primeira conversa e começamos pela Fase 1.
               </p>

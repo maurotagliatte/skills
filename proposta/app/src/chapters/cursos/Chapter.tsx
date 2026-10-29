@@ -58,9 +58,9 @@ export default function CursosChapter({ onNext }: ChapterProps) {
           x={140}
           y={360}
           w={540}
-          eyebrow="05 · Cursos"
-          title={"Cada venda paga\n9,9% + R$ 2,49."}
-          sub="É a taxa da Hotmart por venda [confirmar o plano dela]. Somada num ano de turmas, vira um valor que o simulador mostra."
+          eyebrow="07 · Cursos"
+          title={"A mesma venda,\nmais para você."}
+          sub="Na Hotmart, a taxa é 9,9% + R$ 2,49 por venda [confirmar o plano dela]. Na sua plataforma, ≈ 6,5% e sem taxa fixa. Num ano de turmas, a diferença fica com você."
           show={cue === "painel"}
         />
         <Backdrop photo="icm-pessego" x={BOX.vendas.x} y={BOX.vendas.y} w={BOX.vendas.w} h={BOX.vendas.h} inset="5% 4% -2% 4%">
@@ -71,7 +71,7 @@ export default function CursosChapter({ onNext }: ChapterProps) {
           x={2000}
           y={360}
           w={520}
-          title={"A mesma venda,\nna sua plataforma."}
+          title={"Sua plataforma,\ncom a sua marca."}
           sub="Página de venda, área de membros e alunos no seu endereço. O custo de manter a plataforma já entra na conta."
           show={cue === "sim" || fase !== "scene"}
         />
@@ -111,7 +111,7 @@ export default function CursosChapter({ onNext }: ChapterProps) {
 
       <Overlay show={fase === "scope"}>
         <ScopeCard
-          number="05"
+          number="07"
           title="Seus cursos na sua plataforma"
           items={[
             "Área de membros e página de venda no seu endereço",

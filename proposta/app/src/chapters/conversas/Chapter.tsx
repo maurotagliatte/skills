@@ -131,9 +131,9 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
         <Caption
           x={140}
           y={170}
-          eyebrow="03 · Conversas"
-          title={"Todo mundo chama\nno mesmo WhatsApp."}
-          sub="Na terça, o Ricardo pergunta do retorno do Trovão, um aluno quer saber o preço e o grupo da internação espera notícia. Responder e marcar sem encavalar fica com você."
+          eyebrow="05 · Conversas"
+          title={"Todo mundo que chama\nrecebe resposta."}
+          sub="Na terça, o Ricardo pergunta do retorno do Trovão, um aluno quer saber o preço e o grupo da internação espera notícia. Cada um recebe a resposta certa, e a agenda não encavala."
         />
         <Backdrop photo="icm-musgo" x={140} y={640} w={1180} h={720}>
           <Scattered />
@@ -254,7 +254,7 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
 
       <Overlay show={phase === "scope"}>
         <ScopeCard
-          number="03"
+          number="05"
           title="Conversas com clientes e alunos"
           items={[
             "O WhatsApp da clínica com as conversas separadas por cliente, aluno e internação",

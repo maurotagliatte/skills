@@ -85,9 +85,9 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
           y={330}
           w={540}
           light
-          eyebrow="04 · Números"
-          title={"Gente chega de todo\nlado. Quem compra?"}
-          sub="O Ricardo chegou por indicação, como muitos clientes. Com aluno é parecido, mas hoje só dá para saber semanas depois, olhando venda por venda."
+          eyebrow="06 · Números"
+          title={"Você sabe de onde\nvem quem compra."}
+          sub="O Ricardo chegou por indicação, como muitos clientes. Com os alunos, a Donna liga cada venda à origem e mostra na mesma semana o que traz quem compra."
           show={cue === "quadro"}
         />
         <Backdrop photo="icm-oliva" x={740} y={200} w={1100} h={900} inset="5% 4% -2% 4%">
@@ -154,13 +154,13 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
           label={tocou ? "Ver o que entra no projeto" : "Ensinar com quem compra"}
           onAdvance={tocou ? () => setFase("scope") : ensinar}
         >
-          Hoje o anúncio aprende com quem abre conversa. Ligado, ele recebe de volta quem fechou a matrícula e passa a procurar gente parecida.
+          Ligado, o anúncio fica sabendo quem fechou a matrícula e passa a procurar gente parecida. A verba vai para quem tem mais chance de comprar.
         </AdvanceCard>
       </Overlay>
 
       <Overlay show={fase === "scope"}>
         <ScopeCard
-          number="04"
+          number="06"
           title="O que os números dizem"
           items={[
             "Toda conversa e toda venda guardam de onde a pessoa veio",
@@ -172,7 +172,7 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
           phase="Fase 2"
           metric="Quanto custa cada aluno que comprou, por anúncio [confirmar verba e vendas reais]"
           onNext={onNext}
-          nextLabel="Próximo: vender o curso sem a taxa"
+          nextLabel="Próximo: os cursos na sua plataforma"
         />
       </Overlay>
     </>

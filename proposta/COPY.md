@@ -63,6 +63,10 @@ O Trovão (Quarto de Milha de tambor, 8 anos, claudicação no posterior esquerd
 
 Além do botão, a **primeira linha do subtítulo** de cada capítulo retoma o anterior ("Na mesma noite…", "Na terça, o Ricardo…"). Isso amarra sem mexer no kit. (Uma faixa de transição entre capítulos com essa frase seria melhor, mas é mudança no `engine/Proposal.tsx`; fica como sugestão para depois.)
 
+### Tom: a solução primeiro
+
+Cada capítulo abre com o que a Donna e o sistema fazem por ela ("Fale no haras. A Donna escreve.", "Uma foto e a conta está lançada."). A situação de hoje só aparece quando a história precisa, como fato curto e neutro, nunca como crítica. O ganho é tempo e dinheiro. Os "Problema" abaixo são notas de briefing na voz dela, não texto de tela.
+
 ### Ritmo
 
 - 01 é o capítulo mais longo e o mais importante: duas pausas (gravar, pedir outro modelo). A conferência no WhatsApp deixa de ser uma terceira pausa e vira um botão dentro do cartão ao vivo ("Aprovar e enviar ao Ricardo").
@@ -181,8 +185,9 @@ Fase 1 · Como medimos: **Tempo entre o fim do atendimento e o relatório enviad
 | onde | texto atual | texto novo | por quê |
 |---|---|---|---|
 | `prontuario/Chapter.tsx:111` eyebrow | 01 · Prontuário | 01 · Atendimento | Palavra do dia dela |
-| `:112` título | Hoje, o exame vive num / Word de 7 páginas. | As mãos estão<br>no cavalo. (24 car.) | O problema é o momento, não o arquivo |
-| `:113` sub | O modelo é preenchido à mão no iPad, salvo no Drive, e o SimplesVet fica ao lado. Quando precisa achar um caso, começa a busca. | O atendimento acontece no haras, com o cavalo na guia. O registro fica para a noite, no iPad, e o relatório para depois. | Uma cena, sem nomear sistemas |
+| `:112` título | Hoje, o exame vive num / Word de 7 páginas. | Fale no haras.<br>A Donna escreve. (30 car.) | Abre pelo que a Donna faz por ela |
+| `:113` sub | O modelo é preenchido à mão no iPad, salvo no Drive, e o SimplesVet fica ao lado. Quando precisa achar um caso, começa a busca. | Você atende com o cavalo na guia, como sempre. O registro e o relatório ficam com a Donna, e a sua noite fica livre. | Uma cena, sem nomear sistemas; o ganho é tempo |
+| `atendimento/Chapter.tsx:198` galeria, "Seu modelo de hoje" | Em inglês, tudo em caixa-alta | Em inglês, como você já envia | Descreve o modelo dela sem julgar |
 | `:43–48` arquivos do Drive | (mantém) | mantém; tirar a nota "modelo de 7 páginas" | Os nomes já contam a dor |
 | `:147` título 2 | Grava enquanto / examina. | Um toque na<br>tela de bloqueio. (31 car.) | A cena nova |
 | `:148` sub 2 | No app, um toque. A Donna escuta e preenche o seu modelo de exame locomotor — sem tirar a mão do cavalo. | Sem desbloquear o celular. Você fala o que está vendo, e o atendimento cai no registro do Trovão. | Sai "modelo de exame locomotor" |
@@ -228,8 +233,8 @@ Fase 1 · Como medimos: **Contas lançadas sem digitar, por mês** (hoje: [confi
 | onde | texto atual | texto novo | por quê |
 |---|---|---|---|
 | `financeiro/Chapter.tsx:131` | 02 · Financeiro | 02 · Contas | Palavra dela |
-| `:132` | Hoje, cada boleto / vira digitação. | Cada boleto<br>vira digitação. (27 car.) | Tira o terceiro "Hoje" seguido |
-| `:133` | Fornecedor, vencimento, valor — uma célula de cada vez, à noite, depois do último atendimento. E um erro de digitação passa fácil. | Na mesma noite do atendimento: fornecedor, vencimento e valor, uma célula por vez. E um boleto que chegou no WhatsApp fica para trás. | Abre com o fio; mostra a dor real (o esquecido) |
+| `:132` | Hoje, cada boleto / vira digitação. | As contas em dia<br>e a noite livre. (33 car.) | Abre pelo ganho; a virada ("Uma foto e…") mostra como |
+| `:133` | Fornecedor, vencimento, valor — uma célula de cada vez, à noite, depois do último atendimento. E um erro de digitação passa fácil. | Na mesma noite do atendimento, a cobrança do ferrador chega no WhatsApp. Fornecedor, vencimento e valor, que hoje vão para a planilha, a Donna lança por você. | Abre com o fio; a planilha é só um fato neutro |
 | `:144` | E se o comprovante / virasse lançamento? | Uma foto e<br>a conta está lançada. (35 car.) | Afirmação, não pergunta |
 | `:145` | Uma foto do boleto ou do recibo. A Donna lê, lança em contas a pagar e avisa antes de vencer. | Boleto, recibo ou cobrança por PIX. A Donna lê, lança e avisa você na véspera. | Mais curto |
 | `:182` | step "envie um comprovante" · "Envie a foto de um comprovante, boleto ou recibo." | step "envie uma foto" · "Envie a foto de um boleto, recibo ou PIX." | Palavra comum primeiro |
@@ -277,8 +282,8 @@ Fase 1 · Como medimos: **Mensagens sem resposta no fim do dia** e **tempo até 
 | onde | texto atual | texto novo | por quê |
 |---|---|---|---|
 | `agenda/Chapter.tsx:82` | 03 · Agenda | 03 · Conversas | Problema maior, a agenda vira consequência |
-| `:83` | Hoje, a agenda mora / em cinco lugares. | Todo mundo chama<br>no mesmo WhatsApp. (36 car.) | O problema que o usuário apontou |
-| `:84` | Mensagens, ligações perdidas, post-it e memória. Marcar um retorno é abrir três aplicativos e torcer para não encavalar. | Na terça, o Ricardo pergunta do retorno do Trovão, um aluno quer saber o preço e o grupo da internação espera notícia. Responder e marcar sem encavalar fica com você. | Abre com o fio; mantém o "encavalar" |
+| `:83` | Hoje, a agenda mora / em cinco lugares. | Todo mundo que chama<br>recebe resposta. (36 car.) | Abre pelo resultado; a virada mostra as conversas separadas |
+| `:84` | Mensagens, ligações perdidas, post-it e memória. Marcar um retorno é abrir três aplicativos e torcer para não encavalar. | Na terça, o Ricardo pergunta do retorno do Trovão, um aluno quer saber o preço e o grupo da internação espera notícia. Cada um recebe a resposta certa, e a agenda não encavala. | Abre com o fio; mantém o "encavalar" |
 | `:95` | E se bastasse pedir? | Cada conversa<br>no seu lugar. (26 car.) | Afirmação; descreve a tela |
 | `:96` | Um áudio no carro, entre um haras e outro. A Donna entende o dia, o horário e o paciente — e o compromisso entra na agenda, com lembrete. | Clientes, alunos e internação separados. A Donna responde o que você liberou e prepara o resto para você aprovar. | Explica a solução |
 | `Scattered.tsx:26` | Doutora, dá pra reavaliar o Trovão essa semana? Ele voltou a mancar. | Doutora, quando a gente reavalia o Trovão depois da infiltração? | "Voltou a mancar" contradiz a infiltração do dia anterior; agora puxa o cap. 01 |
@@ -311,7 +316,7 @@ Botão: **Perguntar à Donna**.
 
 **Donna (demo, 1ª pergunta):** resumo em uma frase: "Indicação é o que mais vira aluno: 7 de 22 compraram, sem verba. Entre os anúncios, o B vendeu 7 com R$ 2.700; o A vendeu 4 com R$ 4.200." E a recomendação: "Sugiro passar parte da verba do A para o B por 30 dias e comparar. Quer que eu monte a divisão para você aprovar?"
 
-**Segundo toque (ex-atribuição, em linguagem simples):** surge um interruptor: **"Ensinar o anúncio com quem comprou"**. Texto: "Hoje o anúncio aprende com quem abre conversa. Ligado, ele recebe de volta quem fechou a matrícula e passa a procurar gente parecida." O gráfico de 12 semanas aparece com o selo **Simulação**. A frase de resultado sai em forma condicional: "Na simulação, com a mesma verba, o custo por aluno cai depois de umas três semanas de aprendizado." **Não** mostrar "R$ 205" nem "45% menor" como manchete.
+**Segundo toque (ex-atribuição, em linguagem simples):** surge um interruptor: **"Ensinar o anúncio com quem comprou"**. Texto: "Ligado, o anúncio fica sabendo quem fechou a matrícula e passa a procurar gente parecida. A verba vai para quem tem mais chance de comprar." O gráfico de 12 semanas aparece com o selo **Simulação**. A frase de resultado sai em forma condicional: "Na simulação, com a mesma verba, o custo por aluno cai depois de umas três semanas de aprendizado." **Não** mostrar "R$ 205" nem "45% menor" como manchete.
 
 **Cartão:** título **O que os números dizem**
 - Toda conversa e toda venda guardam de onde a pessoa veio
@@ -320,13 +325,13 @@ Botão: **Perguntar à Donna**.
 - As vendas voltam para o Meta e o Google, e o anúncio passa a procurar quem compra
 - Dados pessoais protegidos: saem criptografados, nunca abertos
 
-Fase 2 · Como medimos: **Quanto custa cada aluno que comprou, por anúncio** (hoje: [confirmar verba e vendas reais]) · Botão: **Próximo: vender o curso sem a taxa**
+Fase 2 · Como medimos: **Quanto custa cada aluno que comprou, por anúncio** (hoje: [confirmar verba e vendas reais]) · Botão: **Próximo: os cursos na sua plataforma**
 
 | onde | texto atual | texto novo | por quê |
 |---|---|---|---|
 | `leads/Chapter.tsx:68` | 05 · Leads | 04 · Números | Sem jargão |
-| `:69` | Lead chega de / todo lado. | Gente chega de todo<br>lado. Quem compra? (37 car.) | O problema completo; sem "lead" |
-| `:70` | WhatsApp, indicação, dois anúncios. Todos parecem iguais na hora em que chegam — a diferença aparece semanas depois, na venda. | O Ricardo chegou por indicação, como muitos clientes. Com aluno é parecido, mas hoje só dá para saber semanas depois, olhando venda por venda. | Abre com o fio; dor concreta |
+| `:69` | Lead chega de / todo lado. | Você sabe de onde<br>vem quem compra. (33 car.) | Abre pelo que ela ganha; sem "lead" |
+| `:70` | WhatsApp, indicação, dois anúncios. Todos parecem iguais na hora em que chegam — a diferença aparece semanas depois, na venda. | O Ricardo chegou por indicação, como muitos clientes. Com os alunos, a Donna liga cada venda à origem e mostra na mesma semana o que traz quem compra. | Abre com o fio; o ganho é concreto |
 | `:82` PauseCard | step "peça uma análise" · "Qual origem traz o aluno bom — e qual só parece barata?" | step "pergunte" · "O que você quer saber dos seus números?" | Abre para perguntas; chips dão o exemplo |
 | `:84` | A Donna lê os {TOTAL_LEADS} leads dos últimos 30 dias, com origem, perfil e resultado, e diz onde está o dinheiro bem gasto. | A Donna lê as 326 pessoas que chegaram nos últimos 30 dias (dados de exemplo) e responde em português. | Marca exemplo; sem "lead" |
 | `:88` botão | Pedir análise para a Donna | Perguntar à Donna | Curto |
@@ -338,7 +343,7 @@ Fase 2 · Como medimos: **Quanto custa cada aluno que comprou, por anúncio** (h
 | `leads/data.ts:16` | orgânico · perfil e site | Instagram, site e blog | Liga ao cap. 06 |
 | `Panel.tsx:50,53` colunas | % qualificado · Custo/lead | Com perfil · Custo por aluno | Sem jargão |
 | `atribuicao/Chapter.tsx:81` | Chega de medir lead / por clique no WhatsApp. | (vira o segundo toque) "Ensinar o anúncio com quem comprou" | "Chega de" é slogan |
-| `:82` | Meça o lead que comprou. Hoje o anúncio aprende com quem abre a conversa; com o CRM ligado, ele passa a aprender com quem fechou a matrícula. | Hoje o anúncio aprende com quem abre conversa. Ligado, ele recebe de volta quem fechou a matrícula e passa a procurar gente parecida. | Sem "CRM" |
+| `:82` | Meça o lead que comprou. Hoje o anúncio aprende com quem abre a conversa; com o CRM ligado, ele passa a aprender com quem fechou a matrícula. | Ligado, o anúncio fica sabendo quem fechou a matrícula e passa a procurar gente parecida. A verba vai para quem tem mais chance de comprar. | Sem "CRM"; diz o ganho, sem "hoje" |
 | `:110–111` opções | Otimizar por clique / Otimizar por venda real | Aprender com quem chama / Aprender com quem compra | Verbo comum |
 | `:140` | Mesma verba: depois de ~3 semanas de aprendizado, o custo por venda cai para R$ 205 na semana 12. | Na simulação, com a mesma verba, o custo por aluno cai depois de umas três semanas de aprendizado. | Número ilustrativo não vira promessa |
 | `:331–337` nós do fluxo | Meta · Conversions API · evento Purchase / Google · Data Manager API · ctwa_clid · gclid | Meta e Google · "fica sabendo quem comprou" | Nome da API só no rodapé técnico do fechamento |
@@ -348,7 +353,7 @@ Fase 2 · Como medimos: **Quanto custa cada aluno que comprou, por anúncio** (h
 
 ### 05 · Cursos *(extra)* (`cursos`: simulador e área de membros)
 
-**Problema:** "Em cada venda de curso, a plataforma fica com 9,9% + R$ 2,49."
+**Problema:** "Em cada venda de curso, a plataforma fica com 9,9% + R$ 2,49." Em tela, vira economia: a mesma venda, mais para ela (≈ 6,5% e sem taxa fixa na plataforma própria).
 
 **Cena:** painel de vendas atual → simulador → a área de membros com a marca dela (sem a edição de aula, que vai para o 06).
 
@@ -367,9 +372,9 @@ Fase 2 · Como medimos: **Quanto fica com você de cada venda** (hoje ≈ 90,1% 
 | onde | texto atual | texto novo | por quê |
 |---|---|---|---|
 | `cursos/Chapter.tsx:113` | 04 · Cursos | 05 · Cursos | Número |
-| `:114` | Cada venda de curso / deixa uma parte / no caminho. (3 linhas) | Cada venda paga<br>9,9% + R$ 2,49. (30 car.) | Duas linhas; o número é público e tem fonte |
-| `:115` | Na plataforma atual, 9,9% + R$ 2,49 de cada venda ficam com ela. Em um ano de turmas, isso vira um valor que dá para medir. | É a taxa da Hotmart por venda [confirmar o plano dela]. Somada num ano de turmas, vira um valor que o simulador mostra. | O número já está no título |
-| `:126` | Com a plataforma / sendo sua. | A mesma venda,<br>na sua plataforma. (33 car.) | Mais concreto |
+| `:114` | Cada venda de curso / deixa uma parte / no caminho. (3 linhas) | A mesma venda,<br>mais para você. (29 car.) | Duas linhas; apresenta a economia, não a taxa |
+| `:115` | Na plataforma atual, 9,9% + R$ 2,49 de cada venda ficam com ela. Em um ano de turmas, isso vira um valor que dá para medir. | Na Hotmart, a taxa é 9,9% + R$ 2,49 por venda [confirmar o plano dela]. Na sua plataforma, ≈ 6,5% e sem taxa fixa. Num ano de turmas, a diferença fica com você. | Os dois números lado a lado, como fato |
+| `:126` | Com a plataforma / sendo sua. | Sua plataforma,<br>com a sua marca. (31 car.) | "A mesma venda" passou para a primeira legenda |
 | `:127` | Mesmo checkout, mesma área de membros — com um gateway de pagamento direto e o custo da plataforma já na conta. | Página de venda, área de membros e alunos no seu endereço. O custo de manter a plataforma já entra na conta. | Sem "checkout/gateway" |
 | `:150` | Plataforma própria · estimativa | Custo da sua plataforma · estimativa | Claro |
 | `:164` botão | Ver a produção das aulas | Ver a área de membros | A produção vai para o 06 |

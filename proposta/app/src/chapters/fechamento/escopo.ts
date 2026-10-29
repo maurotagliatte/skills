@@ -1,5 +1,5 @@
 /**
- * Fonte única do escopo consolidado (capítulo 07 · Proposta).
+ * Fonte única do escopo consolidado (capítulo 09 · Proposta).
  * Edite aqui: módulos, o que também entra, fases e o investimento.
  * Texto visível em linguagem simples (ver proposta/COPY.md); os nomes técnicos ficam só em RODAPE_TECNICO.
  */
@@ -30,6 +30,28 @@ export const MODULOS: Modulo[] = [
   },
   {
     capitulo: "02",
+    id: "busca",
+    titulo: "Perguntar sobre seus casos",
+    itens: [
+      "Pergunte em português e a Donna acha os casos parecidos nos seus relatórios",
+      "Cada resposta mostra de quais casos veio",
+      "Vale para prontuários, laudos e documentos antigos",
+    ],
+    fase: 3,
+  },
+  {
+    capitulo: "03",
+    id: "agenda",
+    titulo: "Agenda por áudio",
+    itens: [
+      "Um áudio vira compromisso na agenda, com local e animal",
+      "A Donna avisa quando dois horários se chocam",
+      "Confirmação e lembrete para o cliente",
+    ],
+    fase: 1,
+  },
+  {
+    capitulo: "04",
     id: "contas",
     titulo: "Contas",
     itens: [
@@ -42,7 +64,7 @@ export const MODULOS: Modulo[] = [
     fase: 1,
   },
   {
-    capitulo: "03",
+    capitulo: "05",
     id: "conversas",
     titulo: "Conversas com clientes e alunos",
     itens: [
@@ -54,7 +76,7 @@ export const MODULOS: Modulo[] = [
     fase: 1,
   },
   {
-    capitulo: "04",
+    capitulo: "06",
     id: "numeros",
     titulo: "O que os números dizem",
     itens: [
@@ -66,7 +88,7 @@ export const MODULOS: Modulo[] = [
     fase: 2,
   },
   {
-    capitulo: "05",
+    capitulo: "07",
     id: "cursos",
     titulo: "Seus cursos na sua plataforma",
     itens: [
@@ -78,7 +100,7 @@ export const MODULOS: Modulo[] = [
     fase: 2,
   },
   {
-    capitulo: "06",
+    capitulo: "08",
     id: "conteudo",
     titulo: "Conteúdo sem parar a clínica",
     itens: [
@@ -93,11 +115,6 @@ export const MODULOS: Modulo[] = [
 
 /** Entra no projeto sem capítulo próprio. */
 export const TAMBEM_ENTRA: { titulo: string; texto: string; fase: Fase }[] = [
-  {
-    titulo: "Perguntar sobre seus casos",
-    texto: "Busca nos prontuários e documentos, em português: “cavalos que infiltrei no tarso, como voltaram?”",
-    fase: 3,
-  },
   {
     titulo: "Seus dados de hoje",
     texto: "Migração do SimplesVet, com o cadastro de clientes e animais e o histórico de cada um.",
@@ -118,8 +135,8 @@ export const FASES: { fase: Fase; nome: string; foco: string; entrega: string }[
   {
     fase: 1,
     nome: "Rotina da clínica",
-    foco: "Tirar a digitação do seu dia: atendimento, contas e conversas, com a Donna.",
-    entrega: "Você grava o atendimento da tela bloqueada, lança contas por foto e responde clientes por áudio.",
+    foco: "Mais tempo no seu dia: atendimento, agenda, contas e conversas, com a Donna.",
+    entrega: "Você grava o atendimento da tela bloqueada, marca a agenda e lança contas por áudio e foto, e responde clientes por áudio.",
   },
   {
     fase: 2,
@@ -130,8 +147,8 @@ export const FASES: { fase: Fase; nome: string; foco: string; entrega: string }[
   {
     fase: 3,
     nome: "Conteúdo",
-    foco: "Transformar o que você já sabe em aula, post e arte.",
-    entrega: "Aulas editadas, posts no site e peças com a sua identidade.",
+    foco: "Transformar o que você já sabe em aula, post e arte, e achar qualquer caso com uma pergunta.",
+    entrega: "Aulas editadas, posts no site, peças com a sua identidade e busca nos seus casos.",
   },
 ];
 

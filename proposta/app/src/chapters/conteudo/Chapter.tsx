@@ -132,7 +132,7 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
           x={140}
           y={420}
           w={500}
-          eyebrow="06 · Conteúdo"
+          eyebrow="08 · Conteúdo"
           title={"Uma gravação,\ntrês peças prontas."}
           sub="O caso do Trovão vira aula, post e arte da turma. Você grava uma vez e revisa o resto."
           show={cue === "aula"}
@@ -242,7 +242,7 @@ export default function ConteudoChapter({ onNext }: ChapterProps) {
 
       <Overlay show={fase === "scope"}>
         <ScopeCard
-          number="06"
+          number="08"
           title="Conteúdo sem parar a clínica"
           items={[
             "Aula: cortes, legendas, capítulos e descrição, publicada na sua plataforma",

@@ -132,9 +132,9 @@ export default function ContasChapter({ onNext }: ChapterProps) {
         <Caption
           x={140}
           y={170}
-          eyebrow="02 · Contas"
-          title={"Cada boleto\nvira digitação."}
-          sub="Na mesma noite do atendimento: fornecedor, vencimento e valor, uma célula por vez. E um boleto que chegou no WhatsApp fica para trás."
+          eyebrow="04 · Contas"
+          title={"As contas em dia\ne a noite livre."}
+          sub="Na mesma noite do atendimento, a cobrança do ferrador chega no WhatsApp. Fornecedor, vencimento e valor, que hoje vão para a planilha, a Donna lança por você."
         />
         <Backdrop photo="icm-areia" x={140} y={640} w={1180} h={720}>
           <Sheet playing={cue === "antes"} />
@@ -270,7 +270,7 @@ export default function ContasChapter({ onNext }: ChapterProps) {
 
       <Overlay show={phase === "scope"}>
         <ScopeCard
-          number="02"
+          number="04"
           title="Contas"
           items={[
             "Foto do boleto, recibo ou PIX vira conta lançada",

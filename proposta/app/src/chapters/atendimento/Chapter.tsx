@@ -195,7 +195,7 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
       saida: "pdf",
       folha: <FolhaEditorial r={editorialR} />,
     },
-    { id: "hoje", nome: "Seu modelo de hoje", sub: "Em inglês, tudo em caixa-alta", grupo: "hoje", state: "static", saida: "nenhuma", folha: <FolhaHoje /> },
+    { id: "hoje", nome: "Seu modelo de hoje", sub: "Em inglês, como você já envia", grupo: "hoje", state: "static", saida: "nenhuma", folha: <FolhaHoje /> },
   ];
   if (step >= 1) cards.push({ id: "clinico", nome: "Clínico enxuto", sub: "Uma página, para colegas", grupo: "donna", state: st(1), saida: "pdf", folha: <FolhaClinica r={base} /> });
   if (step >= 3) cards.push({ id: "bilingue", nome: "Bilíngue", sub: "Português e inglês", grupo: "donna", state: st(2), saida: "pdf", folha: <FolhaBilingue r={base} /> });
@@ -251,8 +251,8 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
           x={140}
           y={170}
           eyebrow="01 · Atendimento"
-          title={"As mãos estão\nno cavalo."}
-          sub="O atendimento acontece no haras, com o cavalo na guia. O registro fica para a noite, no iPad, e o relatório para depois."
+          title={"Fale no haras.\nA Donna escreve."}
+          sub="Você atende com o cavalo na guia, como sempre. O registro e o relatório ficam com a Donna, e a sua noite fica livre."
         />
         <Backdrop photo="icm-areia" x={140} y={640} w={1180} h={720}>
           <AppWindow nav={[]} showSidebar={false} workspace="Meu Drive">
@@ -456,7 +456,7 @@ export default function AtendimentoChapter({ onNext }: ChapterProps) {
           phase="Fase 1"
           metric="Tempo entre o fim do atendimento e o relatório enviado"
           onNext={onNext}
-          nextLabel="Próximo: as contas da semana"
+          nextLabel="Próximo: perguntar sobre seus casos"
         />
       </Overlay>
     </>

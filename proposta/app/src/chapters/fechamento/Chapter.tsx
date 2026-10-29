@@ -44,7 +44,7 @@ export default function FechamentoChapter({ onNext: _onNext }: ChapterProps) {
           onCue={(c) => setStep(c as FusaoStep)}
           onEnd={() => setReady(true)}
         >
-          <Caption x={300} y={440} w={820} size={64} eyebrow="07 · Proposta" title={"Do haras à venda,\nnum sistema só."} show={step === "titulo"} />
+          <Caption x={300} y={440} w={820} size={64} eyebrow="09 · Proposta" title={"Do haras à venda,\nnum sistema só."} show={step === "titulo"} />
           <Fusao step={step} reduce={reduce} />
           <div style={{ position: "absolute", left: 300, top: 700, transform: "scale(1.25)", transformOrigin: "0 0" }}>
             <AnimatePresence>
