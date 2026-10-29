@@ -1,5 +1,5 @@
 // Percorre a proposta inteira como a cliente: clica "Pular e ver um exemplo" e avança.
-// node proposta/tools/e2e.js <pasta-saida> [porta]
+// node proposta/tools/e2e.js <pasta-saida> [porta | URL]
 const { chromium } = require("playwright");
 const [, , out = "e2e", port = "3000"] = process.argv;
 const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no projeto"];
@@ -10,7 +10,7 @@ const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e)));
   p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
-  await p.goto(`http://localhost:${port}/`);
+  await p.goto(port.startsWith("http") ? port : `http://localhost:${port}/`);
   const t0 = Date.now();
   let last = "", n = 0;
   while (Date.now() - t0 < 12 * 60 * 1000) {
