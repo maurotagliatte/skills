@@ -28,7 +28,7 @@ const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no
       }
     }
     if (!clicked && ch.startsWith("10")) {
-      const tab = p.getByRole("button", { name: /Aceite/ });
+      const tab = p.getByRole("tab", { name: /Aceite/ });
       if (await tab.first().isVisible().catch(() => false)) await tab.first().click().catch(() => {});
       const ok = p.getByRole("button", { name: /Quero seguir/ });
       if (await ok.first().isVisible().catch(() => false)) { await ok.first().click(); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/fim.png` }); break; }
