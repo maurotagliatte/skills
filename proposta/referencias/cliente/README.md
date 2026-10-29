@@ -13,3 +13,10 @@
   Check-list (materiais × medicamentos) · Procedimentos.
 
 O capítulo 01 (`app/src/chapters/prontuario/`) usa esse modelo.
+
+- `relatorio-atual-camelo-shanah.pdf` (+ `relatorio-atual-camelo-p-*.png`) — o "relatório camelos": modelo que ela
+  usa hoje (caso real: camela de corrida Shanah, Sahary Sports Camel, Qatar, **em inglês**). Faixas vinho, caixas,
+  tudo em caixa-alta; seções Animal · History · Thermography exam · Visual inspection · Dynamic inspection · Image
+  exam (ultrasound: estrutura × achados) · Recommended treatment; rodapé com nome e CRMV. **O pedido dela é ter
+  modelos de documento mais bonitos** — é a referência de conteúdo para a Donna gerar versões melhores (e bilíngues).
+- "Contas a enviar" = **cobranças a enviar ao cliente**.

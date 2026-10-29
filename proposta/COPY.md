@@ -484,3 +484,15 @@ Fase 3 · Como medimos: **Peças publicadas por mês** e **visitas vindas do Goo
 7. Fechamento: barras de "% com perfil" e nomes ("Zarco") diferentes dos capítulos.
 8. Abertura conta "9 capítulos"; o índice tem 01–09 mais 10; a nova estrutura tem 6.
 9. "Tutor" (código) contra "cliente" (PDF dela) contra "proprietário" (modelo dela). Padronizar: "cliente" na interface, "proprietário" dentro do relatório.
+
+---
+
+## Adendo (definições confirmadas pelo usuário)
+
+- **"Relatório camelos"** = o modelo de relatório veterinário que ela usa hoje (ver
+  `referencias/cliente/relatorio-atual-camelo-shanah.pdf`): caso real de uma camela de corrida no Qatar, em inglês.
+  Ela quer **modelos de documento mais bonitos**. No cap. 01, a galeria de modelos parte do conteúdo desse relatório
+  ("seu modelo de hoje") e a Donna gera 3–4 versões com acabamento editorial, todas com a marca dela, e oferece a
+  versão **bilíngue PT/EN** (ela atende clientes internacionais). Nada de expor o formulário técnico como protagonista.
+- **"Contas a enviar"** = **cobranças a enviar ao cliente**. No cap. 02, além de lançar o boleto que ela paga, a
+  Donna prepara e envia a cobrança ao cliente (ex.: a conta da internação na sexta) com um toque.
