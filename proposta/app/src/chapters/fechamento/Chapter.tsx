@@ -1,42 +1,67 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { Stage, frame, type Shot } from "@/engine/Stage";
 import { Overlay, Caption } from "@/engine/ChapterFrame";
+import { Button } from "@/kit";
 import type { ChapterProps } from "@/engine/types";
-import { Minis, MINI_POS, MINI_W, MINI_H } from "./Minis";
+import { Fusao, type FusaoStep } from "./Fusao";
 import { Proposta } from "./Proposta";
 
 const W = 2200;
-const H = 1500;
+const H = 1400;
 
-// A câmera começa perto do primeiro módulo e recua até ver os seis (eco da abertura).
-const first = MINI_POS[0];
-const ALL = { x: 220, y: 120, w: 1620, h: 940 };
+// Os apps espalhados (plano aberto) → a câmera aproxima enquanto se fundem → app único e o título.
+const WIDE = { x: 140, y: 160, w: 1920, h: 1060 };
+const MID = { x: 440, y: 240, w: 1640, h: 820 };
+const FINAL = { x: 270, y: 380, w: 1260, h: 600 };
 const SHOTS: Shot[] = [
-  frame({ x: first.x - 60, y: first.y - 60, w: MINI_W + 120, h: MINI_H + 120 }, { hold: 1.0 }),
-  frame({ x: 240, y: 380, w: 1040, h: 680 }, { dur: 1.8, hold: 0.6 }),
-  frame(ALL, { dur: 2.2, hold: 2.4, cue: "todos" }),
+  frame(WIDE, { hold: 2.0, cue: "in" }),
+  frame(MID, { dur: 1.1, ease: "power2.inOut", cue: "merge" }),
+  frame(FINAL, { dur: 1.4, cue: "app" }),
+  // a legenda entra quando a câmera assenta
+  frame(FINAL, { dur: 0.05, hold: 1.6, cue: "titulo" }),
 ];
+// movimento reduzido: o estado final, parado
+const SHOTS_REDUCED: Shot[] = [frame(FINAL, { hold: 0.8, cue: "titulo" })];
 
 export default function FechamentoChapter({ onNext: _onNext }: ChapterProps) {
-  const [cue, setCue] = useState("");
+  const reduce = !!useReducedMotion();
+  const [step, setStep] = useState<FusaoStep>("");
+  const [ready, setReady] = useState(false);
   const [proposta, setProposta] = useState(false);
 
   return (
     <>
-      <motion.div animate={{ opacity: proposta ? 0.16 : 1 }} transition={{ duration: 0.9 }} style={{ position: "absolute", inset: 0 }}>
-        <Stage width={W} height={H} shots={SHOTS} running onCue={setCue} onEnd={() => setProposta(true)}>
-          <Caption x={260} y={130} w={1500} eyebrow="07 · Proposta" title={"Do haras à venda,\nnum sistema só."} show={cue === "todos"} />
-          <Minis show />
+      <motion.div animate={{ opacity: proposta ? 0.14 : 1 }} transition={{ duration: 0.8 }} style={{ position: "absolute", inset: 0 }}>
+        <Stage
+          width={W}
+          height={H}
+          shots={reduce ? SHOTS_REDUCED : SHOTS}
+          running
+          onCue={(c) => setStep(c as FusaoStep)}
+          onEnd={() => setReady(true)}
+        >
+          <Caption x={300} y={440} w={820} size={64} eyebrow="07 · Proposta" title={"Do haras à venda,\nnum sistema só."} show={step === "titulo"} />
+          <Fusao step={step} reduce={reduce} />
+          <div style={{ position: "absolute", left: 300, top: 700, transform: "scale(1.25)", transformOrigin: "0 0" }}>
+            <AnimatePresence>
+              {ready && !proposta && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
+                  <Button icon={IconArrowRight} onClick={() => setProposta(true)} advance>
+                    Ver a proposta
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </Stage>
       </motion.div>
 
       <Overlay show={proposta} side="center">
-        <div style={{ marginTop: -18 }}>
-          <Proposta />
-        </div>
+        <Proposta />
       </Overlay>
     </>
   );

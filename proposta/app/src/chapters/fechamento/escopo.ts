@@ -1,6 +1,6 @@
 /**
  * Fonte única do escopo consolidado (capítulo 07 · Proposta).
- * Edite aqui: módulos, o que também entra, fases e — quando os números chegarem — o investimento.
+ * Edite aqui: módulos, o que também entra, fases e o investimento.
  * Texto visível em linguagem simples (ver proposta/COPY.md); os nomes técnicos ficam só em RODAPE_TECNICO.
  */
 
@@ -135,21 +135,28 @@ export const FASES: { fase: Fase; nome: string; foco: string; entrega: string }[
   },
 ];
 
+/** O que ainda não tem número: aparece marcado na tela como "a combinar" (nunca inventar). */
+export const A_COMBINAR = "a combinar";
+/** compatibilidade com o nome antigo */
+export const A_DEFINIR = A_COMBINAR;
+
+/** Preço por fase do projeto. */
+export const POR_FASE = "R$ 4.900";
+
 /**
- * Investimento e prazos — A DEFINIR. Troque os textos quando os números chegarem
- * (ex.: valor: "R$ 00.000", prazo: "8 semanas"). Tudo o que estiver "a definir" aparece marcado na tela.
+ * Investimento: R$ 4.900 por fase, 3 fases = R$ 14.700. Prazos, mensal, pagamento, validade e início
+ * ainda sem número — ficam "a combinar" (troque o texto quando o número chegar, ex.: prazo: "8 semanas").
  */
 export const INVESTIMENTO = {
+  porFase: POR_FASE,
   fases: {
-    1: { valor: "a definir", prazo: "a definir" },
-    2: { valor: "a definir", prazo: "a definir" },
-    3: { valor: "a definir", prazo: "a definir" },
+    1: { valor: POR_FASE, prazo: A_COMBINAR },
+    2: { valor: POR_FASE, prazo: A_COMBINAR },
+    3: { valor: POR_FASE, prazo: A_COMBINAR },
   } as Record<Fase, { valor: string; prazo: string }>,
-  total: "a definir",
-  mensal: { rotulo: "Infraestrutura, IA e suporte", valor: "a definir" },
-  pagamento: "a definir",
-  validade: "a definir",
-  inicio: "a definir",
+  total: "R$ 14.700",
+  mensal: { rotulo: "Infraestrutura, IA e suporte", valor: A_COMBINAR },
+  pagamento: A_COMBINAR,
+  validade: A_COMBINAR,
+  inicio: A_COMBINAR,
 };
-
-export const A_DEFINIR = "a definir";

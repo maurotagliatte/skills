@@ -29,12 +29,9 @@ const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no
         await btn.first().click().catch(() => {}); clicked = true; break;
       }
     }
-    if (!clicked && ch === "fechamento") {
-      const tab = p.getByRole("tab", { name: /Aceite/ });
-      if (await tab.first().isVisible().catch(() => false)) await tab.first().click().catch(() => {});
-      // aceite por deslizar (SlideCommit): pelo teclado, End confirma
-      const ok = p.getByRole("slider", { name: /seguir com o projeto/ });
-      if (await ok.first().isVisible().catch(() => false)) { await ok.first().focus(); await p.keyboard.press("End"); await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/fim.png` }); break; }
+    // fim: a tela final do fechamento (preço à vista, sem aceite) não tem mais botão de avançar
+    if (!clicked && ch === "fechamento" && (await p.locator("[data-proposta-final]").first().isVisible().catch(() => false))) {
+      await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/fim.png` }); break;
     }
   }
   console.log(`total ${((Date.now() - t0) / 1000).toFixed(0)}s`);

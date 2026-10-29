@@ -1,0 +1,236 @@
+/* ——— Abertura: tiles de app ——— */
+.tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -10px 24px rgba(0, 0, 0, 0.14),
+    0 24px 50px -18px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+/* brilho de ícone de app (luz de cima), sem mudar a cor do app */
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 48%);
+  pointer-events: none;
+}
+
+.appTile {
+  display: grid;
+  place-items: center;
+  background: var(--k-paper);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -14px 30px rgba(0, 0, 0, 0.06),
+    0 40px 90px -30px rgba(235, 49, 2, 0.55),
+    0 30px 60px -24px rgba(0, 0, 0, 0.8);
+}
+
+.flash {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 244, 236, 0.95) 0%, rgba(255, 190, 160, 0.45) 28%, rgba(235, 49, 2, 0.18) 50%, transparent 70%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ——— Tela final ——— */
+.panel {
+  width: min(1180px, calc(100vw - 48px));
+  max-height: calc(100vh - 112px);
+  overflow: auto;
+  padding: 26px 30px 20px;
+  border-radius: 24px;
+  background: #0b0b0c;
+  border: 1px solid var(--border-dark);
+  box-shadow: 0 50px 140px -40px rgba(0, 0, 0, 0.9);
+  color: var(--text-inv);
+}
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 430px 1fr;
+  gap: 40px;
+  align-items: stretch;
+}
+@media (max-width: 960px) {
+  .grid { grid-template-columns: 1fr; }
+  .head { flex-direction: column; align-items: flex-start; }
+}
+
+/* ——— Carta "liquid glass" (tons da Khard) ——— */
+.glass {
+  position: relative;
+  display: flex;
+  padding: 7px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.015);
+}
+.glassInner {
+  position: relative;
+  flex: 1;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: #0d0b0b;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+}
+/* névoa quente atrás do volume de vidro */
+.halo {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: -6%;
+  height: 52%;
+  background: radial-gradient(50% 50% at 50% 55%, rgba(235, 49, 2, 0.42), rgba(110, 18, 22, 0.3) 48%, transparent 75%);
+  filter: blur(26px);
+  z-index: -1;
+}
+/* névoa vinho no pé do cartão, sob o vidro fosco do texto */
+.haze {
+  position: absolute;
+  right: -12%;
+  bottom: -18%;
+  width: 70%;
+  height: 50%;
+  background: radial-gradient(closest-side, rgba(123, 42, 46, 0.5), transparent);
+  filter: blur(30px);
+  z-index: -1;
+}
+.lensArea {
+  position: relative;
+  height: 150px;
+  display: grid;
+  place-items: center;
+  perspective: 700px;
+  flex: none;
+}
+/* anel de vidro: borda espessa com gradiente vermelho → vinho → branco quente */
+.lens {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border-radius: 34px;
+  border: 17px solid transparent;
+  background:
+    linear-gradient(#0d0b0b, #0d0b0b) padding-box,
+    conic-gradient(from 200deg, #fff1e6, #ff7a4d 12%, #eb3102 28%, #6a1215 50%, #2b0809 62%, #b8351a 80%, #fff1e6) border-box;
+  transform: rotateX(54deg) rotateZ(45deg);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 220, 200, 0.25),
+    0 18px 40px rgba(235, 49, 2, 0.35);
+  animation: float 6s ease-in-out infinite;
+}
+/* reflexo especular, só no anel */
+.lens::before {
+  content: "";
+  position: absolute;
+  inset: -17px;
+  border-radius: 34px;
+  padding: 17px;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0) 70%, rgba(255, 240, 230, 0.45));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  filter: blur(1.5px);
+}
+@keyframes float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lens { animation: none; }
+}
+.index {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(235, 49, 2, 0.75);
+  z-index: 2;
+}
+.indexTop { top: 14px; left: 18px; }
+.indexBottom { bottom: 14px; right: 18px; transform: rotate(180deg); }
+
+/* corpo em vidro fosco */
+.glassBody {
+  position: relative;
+  flex: 1;
+  padding: 18px 26px 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
+  backdrop-filter: blur(16px);
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.combinar {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px dashed rgba(217, 164, 65, 0.7);
+  background: rgba(199, 124, 2, 0.12);
+  color: #e9b65c;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 8px;
+  padding: 9px 0;
+  border-top: 1px solid var(--border-dark);
+}
+
+.sign {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 22px;
+  align-items: start;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-dark);
+}
+/* assinatura oficial (traço escuro, PNG transparente) invertida para o fundo escuro */
+.signature {
+  display: block;
+  height: 46px;
+  width: auto;
+  filter: invert(1);
+  opacity: 0.92;
+  margin: 8px 0 4px -4px;
+}
+.foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-dark);
+}
+

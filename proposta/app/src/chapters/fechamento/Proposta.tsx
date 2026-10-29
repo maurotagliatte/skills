@@ -1,372 +1,164 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { IconArrowRight, IconCircleCheckFilled, IconClockHour4 } from "@tabler/icons-react";
-import { BrandLogo, Button, Chip } from "@/kit";
-import SlideCommit from "@/kit/rb/SlideCommit/SlideCommit";
-import { MODULOS, FASES, INVESTIMENTO, A_DEFINIR, TAMBEM_ENTRA, RODAPE_TECNICO, type Fase } from "./escopo";
+import { motion, useReducedMotion } from "motion/react";
+import { IconClockHour4 } from "@tabler/icons-react";
+import { BrandLogo } from "@/kit";
+import { MODULOS, FASES, INVESTIMENTO, A_COMBINAR, TAMBEM_ENTRA } from "./escopo";
+import s from "./fechamento.module.css";
 
-const TABS = ["Escopo", "Fases", "Investimento", "Aceite"] as const;
-type Tab = (typeof TABS)[number];
+const GUENKA_H = 44;
+// o logo da cliente vai em placa (padding 0,18 × altura de cada lado): a Khard acompanha a altura total
+const KHARD_H = Math.round(GUENKA_H * 1.36);
 
-/** Valor de proposta; "a definir" aparece marcado, para ninguém confundir com número fechado. */
-function Valor({ v, big }: { v: string; big?: boolean }) {
-  if (v.trim().toLowerCase() !== A_DEFINIR)
-    return (
-      <span className={big ? "display" : undefined} style={big ? { fontSize: 22 } : { fontWeight: 500 }}>
-        {v}
-      </span>
-    );
+const PASSOS = [
+  ["Primeira conversa", "Para fechar detalhes, prazos e ver os relatórios que você mais envia."],
+  ["Ajuste da Fase 1", "Atendimento, contas e conversas no jeito da sua rotina."],
+  ["Cronograma e início", "Datas de entrega por módulo e acesso ao ambiente de testes."],
+] as const;
+
+/** Marca o que ainda não tem número, para ninguém confundir com valor fechado. */
+function Combinar() {
   return (
-    <span
-      className="mono"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        height: big ? 28 : 22,
-        padding: "0 9px",
-        borderRadius: 6,
-        border: "1px dashed #d9a441",
-        background: "var(--amber-soft)",
-        color: "#8a5300",
-        fontSize: big ? 12 : 11,
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
-        whiteSpace: "nowrap",
-      }}
-    >
-      <IconClockHour4 size={12} /> a definir
+    <span className={s.combinar}>
+      <IconClockHour4 size={12} /> {A_COMBINAR}
     </span>
   );
 }
 
-const faseTone = (f: Fase) => (f === 1 ? "red" : f === 2 ? "dark" : "neutral") as "red" | "dark" | "neutral";
-
+/** Tela final do fechamento: o preço já à vista, sem abas nem gesto para revelar. */
 export function Proposta() {
-  const [tab, setTab] = useState<Tab>("Escopo");
-  const next = TABS[TABS.indexOf(tab) + 1];
+  const reduce = useReducedMotion();
+  const enter = (i: number) =>
+    reduce
+      ? {}
+      : { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay: 0.1 + i * 0.09, ease: [0.16, 1, 0.3, 1] as const } };
 
   return (
-    <div
-      style={{
-        width: "min(1160px, calc(100vw - 80px))",
-        height: "min(760px, calc(100vh - 116px))",
-        background: "#fff",
-        color: "var(--text-1)",
-        borderRadius: 20,
-        boxShadow: "0 40px 120px -30px rgba(0,0,0,.8)",
-        display: "grid",
-        gridTemplateRows: "auto auto 1fr auto",
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, padding: "22px 32px 14px" }}>
+    <div className={s.panel} data-proposta-final="">
+      <div className={s.head}>
         <div>
-          <div style={{ marginBottom: 8, color: "var(--text-2)", fontSize: 14 }}>Proposta para a Dra. Gabriela Guenka</div>
+          <div style={{ marginBottom: 6, color: "var(--text-inv-2)", fontSize: 14 }}>Proposta para a Dra. Gabriela Guenka</div>
           <div className="display" style={{ fontSize: 32 }}>
             Seis soluções, em três fases.
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--text-3)" }}>
-          <BrandLogo brand="khard" height={22} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--text-inv-2)" }}>
+          <BrandLogo brand="khard" height={KHARD_H} />
           <span>para</span>
-          <BrandLogo brand="guenka" height={44} />
+          <BrandLogo brand="guenka" height={GUENKA_H} plate />
         </div>
       </div>
 
-      {/* abas com sublinhado (gramática das LPs da Plane) */}
-      <div role="tablist" style={{ display: "flex", gap: 26, padding: "0 32px", borderBottom: "1px solid var(--border)" }}>
-        {TABS.map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={t === tab}
-            onClick={() => setTab(t)}
-            style={{ position: "relative", background: "none", border: 0, padding: "10px 0 12px", fontSize: 14, fontWeight: 500, color: t === tab ? "var(--text-1)" : "var(--text-3)" }}
-          >
-            {t}
-            {t === tab && <motion.span layoutId="tabline" style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 2, background: "var(--text-1)" }} />}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ position: "relative", overflow: "auto", padding: "16px 32px" }}>
-        <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3 }}>
-            {tab === "Escopo" && <Escopo />}
-            {tab === "Fases" && <Fases />}
-            {tab === "Investimento" && <Investimento />}
-            {tab === "Aceite" && <Aceite />}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 32px", borderTop: "1px solid var(--border)", background: "#fcfcfc" }}>
-        <span style={{ color: "var(--text-3)" }}>Proposta preparada pela Khard para a Dra. Gabriela Guenka.</span>
-        {next ? (
-          <Button variant="outline" icon={IconArrowRight} onClick={() => setTab(next)}>
-            {next}
-          </Button>
-        ) : (
-          <span className="display" style={{ fontSize: 16 }}>
-            Nós fabricamos emoções.
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Escopo() {
-  return (
-    <div style={{ display: "grid", gap: 14, fontSize: 12.5 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-        {MODULOS.map((m) => (
-          <div key={m.id} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "11px 14px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>{m.capitulo}</span>
-              <b style={{ fontWeight: 600, fontSize: 14 }}>{m.titulo}</b>
-              <span style={{ marginLeft: "auto" }}>
-                <Chip tone={faseTone(m.fase)}>Fase {m.fase}</Chip>
-              </span>
+      <div className={s.grid}>
+        {/* carta em vidro: preço por fase, total e o escopo resumido */}
+        <motion.div className={s.glass} {...enter(0)}>
+          <div className={s.glassInner}>
+            <div className={s.halo} />
+            <div className={s.haze} />
+            <span className={`${s.index} ${s.indexTop}`}>K♠ 07</span>
+            <span className={`${s.index} ${s.indexBottom}`}>K♠ 07</span>
+            <div className={s.lensArea}>
+              <div className={s.lens} />
             </div>
-            <ul style={{ margin: 0, padding: "0 0 0 16px", color: "var(--text-2)", display: "grid", gap: 2, lineHeight: 1.4 }}>
-              {m.itens.map((it) => (
-                <li key={it}>{it}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <div className="display" style={{ fontSize: 17, marginBottom: 8 }}>
-          Também entra
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-          {TAMBEM_ENTRA.map((t) => (
-            <div key={t.titulo}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <b style={{ fontWeight: 600, fontSize: 14 }}>{t.titulo}</b>
-                <span style={{ color: "var(--text-3)", fontSize: 12 }}>Fase {t.fase}</span>
+            <div className={s.glassBody}>
+              <div className="eyebrow" style={{ marginBottom: 8 }}>
+                Investimento
               </div>
-              <div style={{ color: "var(--text-2)", lineHeight: 1.5 }}>{t.texto}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <p style={{ margin: 0, color: "var(--text-3)", fontSize: 11, lineHeight: 1.5 }}>{RODAPE_TECNICO}</p>
-    </div>
-  );
-}
-
-function Fases() {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
-      {FASES.map((f) => (
-        <div key={f.fase}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-            <span style={{ width: 12, height: 12, borderRadius: 99, background: f.fase === 1 ? "var(--k-red)" : "var(--text-1)", flex: "none" }} />
-            <span style={{ flex: 1, height: 1, background: "var(--border-strong)" }} />
-          </div>
-          <div className="eyebrow" style={{ marginBottom: 6, color: f.fase === 1 ? "var(--k-red)" : "var(--text-2)" }}>
-            Fase {f.fase}
-          </div>
-          <div className="display" style={{ fontSize: 24, marginBottom: 8 }}>
-            {f.nome}
-          </div>
-          <p style={{ margin: "0 0 14px", color: "var(--text-2)", lineHeight: 1.55, minHeight: 60 }}>{f.foco}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-            {MODULOS.filter((m) => m.fase === f.fase).map((m) => (
-              <Chip key={m.id}>{m.titulo}</Chip>
-            ))}
-          </div>
-          <div style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "12px 14px", background: "#fcfcfc" }}>
-            <div style={{ fontSize: 11, color: "var(--text-3)", marginBottom: 4 }}>Ao fim da fase</div>
-            <div style={{ lineHeight: 1.5 }}>{f.entrega}</div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
-              <span style={{ color: "var(--text-3)" }}>Prazo</span>
-              <Valor v={INVESTIMENTO.fases[f.fase].prazo} />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Investimento() {
-  const cell: React.CSSProperties = { padding: "13px 12px", borderBottom: "1px solid var(--border)", verticalAlign: "middle" };
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 28 }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ color: "var(--text-3)", fontSize: 12, textAlign: "left" }}>
-            <th style={{ ...cell, fontWeight: 500 }}>Fase</th>
-            <th style={{ ...cell, fontWeight: 500 }}>Módulos</th>
-            <th style={{ ...cell, fontWeight: 500 }}>Prazo</th>
-            <th style={{ ...cell, fontWeight: 500, textAlign: "right" }}>Investimento</th>
-          </tr>
-        </thead>
-        <tbody>
-          {FASES.map((f) => (
-            <tr key={f.fase}>
-              <td style={cell}>
-                <b style={{ fontWeight: 600 }}>Fase {f.fase}</b>
-                <div style={{ color: "var(--text-3)", fontSize: 12 }}>{f.nome}</div>
-              </td>
-              <td style={{ ...cell, color: "var(--text-2)" }}>
-                {MODULOS.filter((m) => m.fase === f.fase)
-                  .map((m) => m.titulo)
-                  .join(" · ")}
-              </td>
-              <td style={cell}>
-                <Valor v={INVESTIMENTO.fases[f.fase].prazo} />
-              </td>
-              <td style={{ ...cell, textAlign: "right" }}>
-                <Valor v={INVESTIMENTO.fases[f.fase].valor} />
-              </td>
-            </tr>
-          ))}
-          <tr>
-            <td style={cell} colSpan={3}>
-              <b style={{ fontWeight: 600 }}>Mensal</b>
-              <div style={{ color: "var(--text-3)", fontSize: 12 }}>{INVESTIMENTO.mensal.rotulo}</div>
-            </td>
-            <td style={{ ...cell, textAlign: "right" }}>
-              <Valor v={INVESTIMENTO.mensal.valor} />
-            </td>
-          </tr>
-          <tr>
-            <td style={{ ...cell, borderBottom: 0 }} colSpan={3}>
-              <span className="display" style={{ fontSize: 20 }}>
-                Total do projeto
-              </span>
-            </td>
-            <td style={{ ...cell, borderBottom: 0, textAlign: "right" }}>
-              <Valor v={INVESTIMENTO.total} big />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div style={{ display: "grid", alignContent: "start", gap: 10 }}>
-        {(
-          [
-            ["Início", INVESTIMENTO.inicio],
-            ["Forma de pagamento", INVESTIMENTO.pagamento],
-            ["Validade da proposta", INVESTIMENTO.validade],
-          ] as const
-        ).map(([k, v]) => (
-          <div key={k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", border: "1px solid var(--border)", borderRadius: 10 }}>
-            <span style={{ color: "var(--text-2)" }}>{k}</span>
-            <Valor v={v} />
-          </div>
-        ))}
-        <p style={{ margin: "6px 2px 0", color: "var(--text-3)", lineHeight: 1.55 }}>
-          Cada fase é contratada e entregue em sequência: você usa o que ficou pronto enquanto a próxima é construída.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Aceite() {
-  const [ok, setOk] = useState(false);
-  const reduce = useReducedMotion();
-  // TODO(aceite): integração pendente — hoje o aceite é só um estado local, nada é enviado.
-  // Quando houver backend, registrar aqui (data, IP, versão da proposta) e notificar a Khard.
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "400px 1fr", gap: 40, alignItems: "center" }}>
-      <div style={{ position: "relative", padding: "38px 36px 34px", borderRadius: 18, background: "#fff", boxShadow: "0 24px 60px -24px rgba(0,0,0,.35)", border: "1px solid var(--border)" }}>
-        <div style={{ position: "absolute", inset: 14, border: "1px solid var(--k-red)", borderRadius: 10, pointerEvents: "none" }} />
-        <span className="mono" style={{ position: "absolute", top: 8, left: 22, fontSize: 12, color: "var(--k-red)", background: "#fff", padding: "0 6px", lineHeight: 1 }}>
-          K♠ 07
-        </span>
-        <span className="mono" style={{ position: "absolute", bottom: 8, right: 22, fontSize: 12, color: "var(--k-red)", background: "#fff", padding: "0 6px", lineHeight: 1, transform: "rotate(180deg)" }}>
-          K♠ 07
-        </span>
-        <AnimatePresence mode="wait">
-          {!ok ? (
-            <motion.div key="ask" exit={{ opacity: 0, y: -8 }}>
-              <div className="eyebrow" style={{ marginBottom: 10 }}>
-                Proposta
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <span className="display" style={{ fontSize: 50, lineHeight: 1 }}>
+                  {INVESTIMENTO.porFase}
+                </span>
+                <span style={{ fontSize: 17, color: "var(--text-inv-2)" }}>por fase</span>
               </div>
-              <div className="display" style={{ fontSize: 26, marginBottom: 14 }}>
-                Do haras à venda, num sistema só
+              <div style={{ margin: "8px 0 16px", color: "var(--text-inv-2)", fontSize: 14 }}>
+                {FASES.length} fases · <span style={{ color: "var(--text-inv)" }}>{INVESTIMENTO.total}</span> no total
               </div>
-              <div style={{ display: "grid", gap: 8, marginBottom: 22, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                <Linha k="Escopo" v={`${MODULOS.length} soluções`} />
-                <Linha k="Fases" v={`${FASES.length}, em sequência`} />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ color: "var(--text-3)" }}>Investimento</span>
-                  <Valor v={INVESTIMENTO.total} />
+              {FASES.map((f) => (
+                <div key={f.fase} className={s.row}>
+                  <span>
+                    <b style={{ fontWeight: 600 }}>Fase {f.fase}</b> <span style={{ color: "var(--text-inv-2)" }}>· {f.nome}</span>
+                    <span style={{ display: "block", marginTop: 2, color: "var(--text-inv-2)", fontSize: 12, lineHeight: 1.45 }}>
+                      {MODULOS.filter((m) => m.fase === f.fase)
+                        .map((m) => m.titulo)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  <span style={{ fontVariantNumeric: "tabular-nums" }}>{INVESTIMENTO.fases[f.fase].valor}</span>
                 </div>
+              ))}
+              <div className={s.row} style={{ alignItems: "center" }}>
+                <span className="display" style={{ fontSize: 18 }}>
+                  Total do projeto
+                </span>
+                <span className="display" style={{ fontSize: 24, fontVariantNumeric: "tabular-nums" }}>
+                  {INVESTIMENTO.total}
+                </span>
               </div>
-              {/* deslizar é um gesto deliberado: evita aceite por clique acidental (teclado: End) */}
-              <SlideCommit
-                label="Deslize para seguir com o projeto"
-                doneLabel="Combinado"
-                width={328}
-                height={52}
-                radius={12}
-                trackColor="#141515"
-                handleColor="#eb3102"
-                successColor="#1f8a4c"
-                holdMs={0}
-                className="slide-commit--khard"
-                onConfirm={() => new Promise((r) => setTimeout(r, 450))}
-                onDone={() => setTimeout(() => setOk(true), reduce ? 0 : 900)}
-              />
-              <p style={{ margin: "10px 0 0", color: "var(--text-3)", fontSize: 12, lineHeight: 1.5 }}>Nada é enviado daqui. O aceite só marca esta tela.</p>
-            </motion.div>
-          ) : (
-            <motion.div key="ok" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: "center", padding: "18px 0" }}>
-              <IconCircleCheckFilled size={44} color="var(--green)" />
-              <div className="display" style={{ fontSize: 26, margin: "10px 0 8px" }}>
-                Combinado.
-              </div>
-              <p style={{ margin: 0, color: "var(--text-2)", lineHeight: 1.55 }}>
-                Nada foi enviado por esta tela. Para seguir, responda a mensagem em que recebeu este link: marcamos a primeira conversa e começamos pela Fase 1.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      <div>
-        {/* mockup oficial das cartas da Khard (public/brand), só recortado */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/khard-cartas.jpg" alt="Cartas da Khard" style={{ display: "block", width: "100%", height: 150, objectFit: "cover", objectPosition: "center 55%", borderRadius: 12, marginBottom: 18 }} />
-        <div className="eyebrow" style={{ marginBottom: 10 }}>
-          Próximos passos
-        </div>
-        {[
-          ["Primeira conversa", "Para fechar detalhes e ver os relatórios que você mais envia."],
-          ["Ajuste da Fase 1", "Atendimento, contas e conversas no jeito da sua rotina."],
-          ["Cronograma e início", "Datas de entrega por módulo e acesso ao ambiente de testes."],
-        ].map(([t, d], i) => (
-          <div key={t} style={{ display: "grid", gridTemplateColumns: "34px 1fr", gap: 10, padding: "14px 0", borderTop: "1px solid var(--border)" }}>
-            <span className="mono" style={{ color: "var(--k-red)", fontSize: 12, paddingTop: 2 }}>
-              0{i + 1}
-            </span>
-            <span>
-              <b style={{ fontWeight: 600, fontSize: 14 }}>{t}</b>
-              <span style={{ display: "block", color: "var(--text-2)", marginTop: 2, lineHeight: 1.5 }}>{d}</span>
-            </span>
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+        </motion.div>
 
-function Linha({ k, v }: { k: string; v: string }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <span style={{ color: "var(--text-3)" }}>{k}</span>
-      <span>{v}</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 18, minWidth: 0 }}>
+          <motion.div {...enter(1)}>
+            <div className="eyebrow" style={{ marginBottom: 8 }}>
+              Próximos passos
+            </div>
+            {PASSOS.map(([t, d], i) => (
+              <div key={t} className={s.step}>
+                <span className="mono" style={{ color: "var(--k-red)", fontSize: 12, paddingTop: 2 }}>
+                  0{i + 1}
+                </span>
+                <span>
+                  <b style={{ fontWeight: 600, fontSize: 14 }}>{t}</b>
+                  <span style={{ display: "block", color: "var(--text-inv-2)", marginTop: 2, lineHeight: 1.5 }}>{d}</span>
+                </span>
+              </div>
+            ))}
+            <div className={s.step} style={{ gridTemplateColumns: "1fr auto", alignItems: "center" }}>
+              <span style={{ color: "var(--text-inv-2)", lineHeight: 1.5 }}>
+                Prazo de cada fase, mensal (infraestrutura, IA e suporte), forma de pagamento e validade
+              </span>
+              <Combinar />
+            </div>
+            <div className="eyebrow" style={{ margin: "16px 0 8px" }}>
+              Também entra
+            </div>
+            <div style={{ color: "var(--text-inv-2)", lineHeight: 1.55, paddingTop: 8, borderTop: "1px solid var(--border-dark)" }}>
+              {TAMBEM_ENTRA.map((t, i) => (
+                <span key={t.titulo}>
+                  {i > 0 && " · "}
+                  <span style={{ color: "var(--text-inv)" }}>{t.titulo}</span> <span style={{ color: "var(--text-3)" }}>(Fase {t.fase})</span>
+                </span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* assinatura do responsável */}
+          <motion.div className={s.sign} style={{ marginTop: "auto" }} {...enter(2)}>
+            {/* foto oficial, já redonda e com moldura própria */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/mauro-avatar.jpg" alt="Mauro Souza Tagliatti" width={84} height={84} style={{ display: "block", width: 84, height: 84, borderRadius: "50%" }} />
+            <div>
+              <div className="display" style={{ fontSize: 21, lineHeight: 1.3, maxWidth: 520 }}>
+                Obrigado pelo interesse, Dra. Gabriela. Vai ser uma honra conduzir este projeto com você.
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/mauro-assinatura.png" alt="Assinatura de Mauro Souza Tagliatti" className={s.signature} />
+              <div style={{ fontSize: 14 }}>Mauro Souza Tagliatti · Khard</div>
+              <p style={{ margin: "6px 0 0", color: "var(--text-inv-2)", lineHeight: 1.55, maxWidth: 540 }}>
+                Para seguir, responda a mensagem em que recebeu este link: marcamos a primeira conversa e começamos pela Fase 1.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      <div className={s.foot}>
+        <span className="display" style={{ fontSize: 17 }}>
+          Nós fabricamos emoções.
+        </span>
+        <span style={{ color: "var(--text-3)", fontSize: 12 }}>Nada é enviado por esta tela.</span>
+      </div>
     </div>
   );
 }
