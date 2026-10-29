@@ -1,0 +1,16 @@
+{
+  "font": { "family": "Inter", "base": "13px/1.4 400", "medium": "13px/1.4 500", "small": "12px/1.4 400" },
+  "text": { "primary": "#333333", "secondary": "#666666", "tertiary": "#999999", "light": "#b3b3b3", "extraLight": "#cccccc", "inverted": "#ffffff" },
+  "background": { "primary": "#ffffff", "secondary": "#fcfcfc", "glass": "#ffffffcc" },
+  "border": { "light": "#f1f1f1", "medium": "#ebebeb", "stronger": "#d6d6d6" },
+  "transparent": { "lighter": "#00000005", "light": "#0000000a", "medium": "#00000014" },
+  "accent": { "2": "#f8faff", "3": "#f0f4ff", "6": "#c6d4f9", "9": "#3e63dd", "indigo11": "#3451b2" },
+  "tags": {
+    "green": ["#ccebd7", "#153226"], "teal": ["#c7ebe5", "#10302b"], "purple": ["#eddbf9", "#2b0e44"],
+    "sky": ["#c1ecf9", "#003242"], "orange": ["#ffdcc3", "#451e11"], "yellow": ["#fef2a4", "#35290f"],
+    "pink": ["#f9d8ec", "#3b0a2a"], "red": ["#fdd8d8", "#381316"]
+  },
+  "spacing": { "1": 4, "2": 8 },
+  "appHeaderHeight": 48,
+  "effects": { "glassCard": "backdrop-filter: blur(40px); box-shadow: 0 2px 4px #0000000a, 0 0 4px #00000014" }
+}
