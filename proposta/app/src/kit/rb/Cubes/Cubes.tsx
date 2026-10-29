@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type HTMLAttributes } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState, type HTMLAttributes, type Ref } from 'react';
 
 import './Cubes.css';
 
@@ -28,7 +28,13 @@ export interface CubesProps extends HTMLAttributes<HTMLDivElement> {
   intro?: boolean;
   paused?: boolean;
   dpr?: number;
+  /** (local) controle imperativo: onda disparada por código, ex.: o botão "Começar" */
+  ref?: Ref<CubesHandle>;
 }
+
+/** (local) Dispara uma onda a partir de (x, y) em px de layout do container (padrão: centro).
+ * Devolve quantos segundos a onda leva até a borda mais distante (0 com reduced-motion ou sem WebGL2). */
+export type CubesHandle = { ripple: (x?: number, y?: number, color?: string) => number };
 
 type Settings = {
   gridSize: number;
@@ -287,9 +293,13 @@ export const Cubes = ({
   paused = false,
   dpr,
   className = '',
+  ref,
   ...rest
 }: CubesProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const rippleRef = useRef<CubesHandle['ripple']>(() => 0);
+  const [fallback, setFallback] = useState(false);
+  useImperativeHandle(ref, () => ({ ripple: (x, y, color) => rippleRef.current(x, y, color) }), []);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wakeRef = useRef<(() => void) | null>(null);
   const settings: Settings = {
@@ -328,9 +338,16 @@ export const Cubes = ({
       depth: true,
       stencil: false
     });
-    if (!container || !canvas || !gl) return undefined;
+    if (!container || !canvas || !gl) {
+      // (local) sem WebGL2: grade estática em CSS no lugar
+      setFallback(true);
+      return undefined;
+    }
     const shader = link(gl);
-    if (!shader) return undefined;
+    if (!shader) {
+      setFallback(true);
+      return undefined;
+    }
 
     const cube = buildCube();
     const vao = gl.createVertexArray();
@@ -433,6 +450,20 @@ export const Cubes = ({
       rings.push({ x: ox, y: oy, born: clock });
       if (rings.length > 6) rings.shift();
       wake();
+    };
+    // (local) onda programática: ignora rippleOnClick; cor opcional só para esta onda
+    rippleRef.current = (x, y, color) => {
+      if (reduce) return 0;
+      const px = x ?? view.width / 2;
+      const py = y ?? view.height / 2;
+      if (color) settingsRef.current = { ...settingsRef.current, rippleColor: color };
+      const [ox, oy] = toWorld(px, py);
+      rings.push({ x: ox, y: oy, born: clock });
+      if (rings.length > 6) rings.shift();
+      wake();
+      const half = grid.size / 2;
+      const far = Math.hypot(half + Math.abs(ox), half + Math.abs(oy));
+      return far / (8 * settingsRef.current.rippleSpeed);
     };
 
     const render = () => {
@@ -633,7 +664,9 @@ export const Cubes = ({
       const s = settingsRef.current;
       const width = Math.max(1, container.clientWidth);
       const height = Math.max(1, container.clientHeight);
-      view.ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
+      // (local) dentro do mundo escalado pela câmera, o canvas precisa de mais pixels para não borrar
+      const layoutScale = container.getBoundingClientRect().width / Math.max(1, container.clientWidth) || 1;
+      view.ratio = Math.min(s.dpr || (window.devicePixelRatio || 1) * Math.max(1, layoutScale), 2);
       view.width = width;
       view.height = height;
       view.scale = Math.min(width, height) / (s.gridSize + 0.9);
@@ -647,11 +680,16 @@ export const Cubes = ({
       wake();
     };
 
-    const onPointerMove = (event: PointerEvent) => {
+    // (local) o rect vem escalado pela câmera; a grade é medida em px de layout (clientWidth)
+    const toLocal = (event: PointerEvent) => {
       const rect = container.getBoundingClientRect();
-      pointer.x = event.clientX - rect.left;
-      pointer.y = event.clientY - rect.top;
-      pointer.inside = pointer.x >= 0 && pointer.y >= 0 && pointer.x <= rect.width && pointer.y <= rect.height;
+      const k = rect.width / Math.max(1, container.clientWidth) || 1;
+      return [(event.clientX - rect.left) / k, (event.clientY - rect.top) / k] as const;
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      [pointer.x, pointer.y] = toLocal(event);
+      pointer.inside = pointer.x >= 0 && pointer.y >= 0 && pointer.x <= view.width && pointer.y <= view.height;
       if (pointer.inside) pointer.moved = clock;
       wake();
     };
@@ -662,8 +700,8 @@ export const Cubes = ({
     };
 
     const onPointerDown = (event: PointerEvent) => {
-      const rect = container.getBoundingClientRect();
-      ripple(event.clientX - rect.left, event.clientY - rect.top);
+      const [x, y] = toLocal(event);
+      ripple(x, y);
     };
 
     const onVisibility = () => {
@@ -707,6 +745,7 @@ export const Cubes = ({
     return () => {
       cancelAnimationFrame(raf);
       wakeRef.current = null;
+      rippleRef.current = () => 0;
       resizeObserver.disconnect();
       intersection.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
@@ -727,6 +766,22 @@ export const Cubes = ({
 
   return (
     <div ref={containerRef} className={`cubes-container${className ? ` ${className}` : ''}`} {...rest}>
+      {fallback && (
+        <div
+          className="cubes-fallback"
+          aria-hidden="true"
+          style={{
+            gridTemplateColumns: `repeat(${settings.gridSize}, 1fr)`,
+            gap: `${(settings.gap * 100) / settings.gridSize}%`,
+            ['--cubes-edge' as string]: settings.edgeColor,
+            ['--cubes-face' as string]: settings.faceColor
+          }}
+        >
+          {Array.from({ length: settings.gridSize * settings.gridSize }, (_, i) => (
+            <span key={i} />
+          ))}
+        </div>
+      )}
       <canvas ref={canvasRef} className="cubes-canvas" aria-hidden="true" />
     </div>
   );

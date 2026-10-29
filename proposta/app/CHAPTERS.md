@@ -67,3 +67,19 @@ npx tsc --noEmit
 
 Olhe os prints (monte uma folha de contato) e corrija até: nada cortado ou sobreposto, texto legível
 (zoom efetivo ≥ 0,75 em janelas com texto de 13 px), cards não cobrindo a área útil, sem erros no console.
+
+## Engine/kit: o que mudou (passagem, títulos, tom claro)
+
+- **Passagem entre capítulos** é automática: o `<Stage>` que sai continua o movimento da câmera e o que entra
+  chega andando (sem desfoque, sem preto). Não anime a entrada do capítulo inteiro por conta própria.
+- **`<Caption>`**: o título entra linha a linha (máscara + leve giro, `SplitText`); quebras com `\n`, no máximo 2
+  linhas. Novo `size` (padrão 56). O corpo entra só com opacidade. Para um título fora do Caption:
+  `<SceneTitle text size delay show />` e `titleDuration(text)` (de `@/engine/ChapterFrame`).
+- **Campo claro**: `<Stage tone="light">` pinta o palco de `#eff0f0` (`--canvas-light`) e troca o cromo para
+  texto escuro. Use `<Caption light>` e janelas claras por cima.
+- **`<Backdrop grain>`**: grão de filme (React Bits Noise) sobre a foto ICM, padrão 0,16; `grain={0}` desliga.
+  `<PhotoGrain photo position grain />` dá só a camada foto + grão para molduras próprias.
+- **`useAgent`**: run sem evento por 15 s (ou com erro) é refeito sozinho, uma vez, com `demo: true`.
+- **`V`** (valor do agente) desliza sem desfoque.
+- Cromo: o cabeçalho tem só o logo; o nome do capítulo fica pequeno no rodapé, junto da barra de progresso
+  (clicável). Use no máximo um rótulo pequeno (eyebrow) por cena.

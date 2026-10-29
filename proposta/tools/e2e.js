@@ -2,7 +2,8 @@
 // node proposta/tools/e2e.js <pasta-saida> [porta | URL]
 const { chromium } = require("playwright");
 const [, , out = "e2e", port = "3000"] = process.argv;
-const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no projeto"];
+// rótulos exatos + os "Próximo: …" do fio (COPY.md) e o "Ver a proposta" do cap. 06
+const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no projeto", /^Próximo:/, /^Ver a proposta/];
 (async () => {
   require("fs").mkdirSync(out, { recursive: true });
   const b = await chromium.launch();
@@ -15,23 +16,25 @@ const NEXT = ["Começar", "Próximo capítulo", "Continuar", "Ver o que entra no
   let last = "", n = 0;
   while (Date.now() - t0 < 12 * 60 * 1000) {
     await p.waitForTimeout(1500);
-    const ch = (await p.locator("header span.mono").last().textContent()) ?? "";
+    // capítulo atual: data-chapter na casca (o contador "00 / 10" do cabeçalho saiu)
+    const ch = (await p.locator("[data-chapter]").first().getAttribute("data-chapter").catch(() => "")) ?? "";
     if (ch !== last) { console.log(`${((Date.now() - t0) / 1000).toFixed(0)}s  capítulo ${ch}`); last = ch; }
     if (n++ % 3 === 0) await p.screenshot({ path: `${out}/${String(n).padStart(4, "0")}.png` });
     const skip = p.getByText(/^Pular e /);
     if (await skip.first().isVisible().catch(() => false)) { await skip.first().click().catch(() => {}); continue; }
     let clicked = false;
     for (const name of NEXT) {
-      const btn = p.getByRole("button", { name, exact: true });
+      const btn = typeof name === "string" ? p.getByRole("button", { name, exact: true }) : p.getByRole("button", { name });
       if (await btn.first().isVisible().catch(() => false) && await btn.first().isEnabled().catch(() => false)) {
         await btn.first().click().catch(() => {}); clicked = true; break;
       }
     }
-    if (!clicked && ch.startsWith("10")) {
+    if (!clicked && ch === "fechamento") {
       const tab = p.getByRole("tab", { name: /Aceite/ });
       if (await tab.first().isVisible().catch(() => false)) await tab.first().click().catch(() => {});
-      const ok = p.getByRole("button", { name: /Quero seguir/ });
-      if (await ok.first().isVisible().catch(() => false)) { await ok.first().click(); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/fim.png` }); break; }
+      // aceite por deslizar (SlideCommit): pelo teclado, End confirma
+      const ok = p.getByRole("slider", { name: /seguir com o projeto/ });
+      if (await ok.first().isVisible().catch(() => false)) { await ok.first().focus(); await p.keyboard.press("End"); await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/fim.png` }); break; }
     }
   }
   console.log(`total ${((Date.now() - t0) / 1000).toFixed(0)}s`);

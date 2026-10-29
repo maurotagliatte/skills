@@ -6,6 +6,14 @@
   background-size: cover;
   background-position: center;
 }
+.backdropPhoto {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  /* a régua tira a cor da foto: um pouco mais de saturação que o arquivo */
+  filter: saturate(1.12) contrast(1.03);
+}
 .backdropInner {
   position: absolute;
   inset: 6% 6% -2% 6%;

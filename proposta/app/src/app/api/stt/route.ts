@@ -2,12 +2,13 @@ export const runtime = "nodejs";
 
 /**
  * Transcrição de áudio. O Claude não transcreve áudio, então usamos um STT dedicado.
- * Sem OPENAI_API_KEY responde 501 e o capítulo segue com a transcrição de exemplo.
+ * Sem OPENAI_API_KEY responde 200 com { text: null, available: false } (não é erro: o capítulo
+ * segue com a transcrição de exemplo). 400 = áudio inválido; 502 = o serviço falhou.
  * O áudio é processado e descartado — nada é armazenado.
  */
 export async function POST(req: Request) {
   const key = process.env.OPENAI_API_KEY;
-  if (!key) return new Response(null, { status: 501 });
+  if (!key) return Response.json({ text: null, available: false });
 
   const form = await req.formData();
   const audio = form.get("audio");
@@ -24,5 +25,5 @@ export async function POST(req: Request) {
   });
   if (!res.ok) return new Response(null, { status: 502 });
   const { text } = (await res.json()) as { text: string };
-  return Response.json({ text });
+  return Response.json({ text, available: true });
 }

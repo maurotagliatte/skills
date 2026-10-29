@@ -6,12 +6,12 @@ import { Chip, CountUp } from "@/kit";
 import { TAXAS, brl, brlCents, num } from "./calc";
 
 const VENDAS = [
-  { quando: "hoje, 14:02", aluno: "Dra. Marina Lopes", produto: "Biomecânica Equina Aplicada", forma: "12x cartão", valor: 997 },
-  { quando: "hoje, 11:47", aluno: "Rafael Antunes", produto: "Workshop · Claudicação", forma: "Pix", valor: 497 },
-  { quando: "ontem, 21:15", aluno: "Dr. Paulo Henrique", produto: "Biomecânica Equina Aplicada", forma: "6x cartão", valor: 997 },
-  { quando: "ontem, 18:30", aluno: "Camila Rezende", produto: "Mentoria clínica · turma 4", forma: "12x cartão", valor: 2997 },
-  { quando: "ontem, 09:12", aluno: "Dra. Júlia Prado", produto: "Biomecânica Equina Aplicada", forma: "à vista", valor: 997 },
-  { quando: "27/10, 16:40", aluno: "Thiago Moraes", produto: "Workshop · Claudicação", forma: "3x cartão", valor: 497 },
+  { quando: "hoje, 14:02", aluno: "Dra. Marina Lopes", produto: "Curso online", forma: "12x cartão", valor: 997 },
+  { quando: "hoje, 11:47", aluno: "Rafael Antunes", produto: "Workshop presencial", forma: "Pix", valor: 497 },
+  { quando: "ontem, 21:15", aluno: "Dr. Paulo Henrique", produto: "Curso online", forma: "6x cartão", valor: 997 },
+  { quando: "ontem, 18:30", aluno: "Camila Rezende", produto: "Mentoria", forma: "12x cartão", valor: 2997 },
+  { quando: "ontem, 09:12", aluno: "Dra. Júlia Prado", produto: "Curso online", forma: "à vista", valor: 997 },
+  { quando: "27/10, 16:40", aluno: "Thiago Moraes", produto: "Workshop presencial", forma: "3x cartão", valor: 497 },
 ];
 
 const taxa = (v: number) => v * TAXAS.hotmart.pct + TAXAS.hotmart.fixo;
@@ -39,7 +39,9 @@ export function Sales({ show, focus }: { show: boolean; focus: boolean }) {
         <IconReceipt size={16} color="var(--text-2)" />
         <b style={{ fontWeight: 500 }}>Painel de vendas</b>
         <span style={{ color: "var(--text-3)" }}>· plataforma atual (Hotmart)</span>
-        <span style={{ marginLeft: "auto", color: "var(--text-3)", fontSize: 12 }}>jan – out 2026</span>
+        <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, color: "var(--text-3)", fontSize: 12 }}>
+          jan – out 2026 <Chip tone="amber">Dados de exemplo</Chip>
+        </span>
       </div>
       <div style={{ padding: "20px 24px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 22 }}>

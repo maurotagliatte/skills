@@ -21,6 +21,8 @@
   --surface: #ffffff;
   --canvas: var(--k-paper);
   --stage: #050505;
+  /* campo claro da régua Plane: <Stage tone="light"> */
+  --canvas-light: #eff0f0;
   --dark-1: #111212;
   --dark-2: #1b1c1d;
   --dark-3: #262829;
@@ -73,6 +75,8 @@ html, body {
 }
 
 button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, [role="slider"]:focus-visible, a:focus-visible { outline: 2px solid var(--k-red); outline-offset: 2px; }
+.k-round:active { transform: scale(0.96); }
 input, textarea { font: inherit; }
 
 .display {

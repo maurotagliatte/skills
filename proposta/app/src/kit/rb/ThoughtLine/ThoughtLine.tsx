@@ -53,7 +53,8 @@ const ThoughtLine: React.FC<ThoughtLineProps> = ({
   steps = EMPTY_STEPS,
   collapsible = true,
   collapseOnSettle = true,
-  color = 'currentColor',
+  // local: 'currentColor' some no brilho (o texto do brilho é transparente) — padrão claro do design system
+  color = 'var(--text-inv)',
   glyphColor = '',
   fontSize = 16,
   breathPeriod = 1.6,

@@ -16,12 +16,12 @@ export type VProps = {
   bg?: string;
 };
 
-/** Valor que aparece com fade + desfoque quando chega do agente (args parciais). */
+/** Valor que desliza e aparece quando chega do agente (args parciais). Sem desfoque (ANALISE P3). */
 export function V({ v, w = 100, h = 10, bg = "#eceeee" }: VProps) {
   return (
     <AnimatePresence mode="wait" initial={false}>
       {v ? (
-        <motion.span key="v" initial={{ opacity: 0, filter: "blur(6px)", y: 3 }} animate={{ opacity: 1, filter: "blur(0px)", y: 0 }} transition={{ duration: 0.45 }}>
+        <motion.span key="v" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
           {v}
         </motion.span>
       ) : (

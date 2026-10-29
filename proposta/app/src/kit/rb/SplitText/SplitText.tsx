@@ -14,6 +14,8 @@ export interface SplitTextProps {
   text: string;
   className?: string;
   delay?: number;
+  /** (local) atraso antes da primeira peça, em segundos — para encadear várias linhas */
+  startDelay?: number;
   duration?: number;
   ease?: string | ((t: number) => number);
   splitType?: 'chars' | 'words' | 'lines' | 'words, chars';
@@ -89,6 +91,7 @@ const SplitText = ({
   text,
   className = '',
   delay = 50,
+  startDelay = 0,
   duration = 1.25,
   ease,
   splitType = 'chars',
@@ -371,6 +374,7 @@ const SplitText = ({
           }
           if (revealed) return undefined;
           intro = reveal(true, {
+            delay: startDelay,
             scrollTrigger:
               trigger === 'load'
                 ? undefined
@@ -416,6 +420,7 @@ const SplitText = ({
       dependencies: [
         text,
         delay,
+        startDelay,
         duration,
         ease,
         splitType,

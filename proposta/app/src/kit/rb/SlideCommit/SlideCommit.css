@@ -199,3 +199,8 @@
     }
   }
 }
+
+/* (local) variante Khard: alça vermelha, texto do trilho claro (não herda o vermelho) */
+.slide-commit--khard .slide-commit__text:not(.slide-commit__text--error) {
+  color: rgba(246, 246, 246, 0.72);
+}

@@ -1,6 +1,7 @@
 /**
- * Fonte única do escopo consolidado (capítulo 10 · Proposta).
- * Edite aqui: módulos, fases e — quando os números chegarem — o investimento.
+ * Fonte única do escopo consolidado (capítulo 07 · Proposta).
+ * Edite aqui: módulos, o que também entra, fases e — quando os números chegarem — o investimento.
+ * Texto visível em linguagem simples (ver proposta/COPY.md); os nomes técnicos ficam só em RODAPE_TECNICO.
  */
 
 export type Fase = 1 | 2 | 3;
@@ -17,92 +18,120 @@ export type Modulo = {
 export const MODULOS: Modulo[] = [
   {
     capitulo: "01",
-    id: "prontuario",
-    titulo: "Prontuário e relatórios",
+    id: "atendimento",
+    titulo: "Atendimento e relatórios",
     itens: [
-      "Exame Locomotor por voz, no seu modelo",
-      "Relatórios de atendimento, internação, imagem e alta",
-      "Status de conferência e envio pelo WhatsApp",
-      "Clientes e pacientes migrados do SimplesVet",
+      "Atalho na tela bloqueada do celular para gravar o atendimento",
+      "A Donna monta o relatório a partir do que você falou",
+      "Modelos de atendimento, alta, laudo de imagem e internação, e novos quando você pedir",
+      "Exportar em PDF ou enviar pelo WhatsApp, sempre depois da sua conferência",
     ],
     fase: 1,
   },
   {
     capitulo: "02",
-    id: "financeiro",
-    titulo: "Financeiro",
-    itens: ["Orçamentos aprovados e não aprovados", "Contas a pagar, a receber e a enviar", "Leitura de comprovantes e boletos", "Alertas, conciliação e relatórios"],
+    id: "contas",
+    titulo: "Contas",
+    itens: [
+      "A foto do boleto, recibo ou Pix vira conta lançada",
+      "Aviso no celular na véspera de cada vencimento",
+      "Orçamentos; o aprovado vira conta a receber",
+      "Cobranças preparadas para enviar ao cliente com um toque",
+      "Conferência com o extrato do banco e resumo do mês",
+    ],
     fase: 1,
   },
   {
     capitulo: "03",
-    id: "agenda",
-    titulo: "Agenda",
-    itens: ["Integrada ao Google Agenda", "Marcação por áudio e WhatsApp", "Lembretes para você e o tutor"],
+    id: "conversas",
+    titulo: "Conversas com clientes e alunos",
+    itens: [
+      "O WhatsApp da clínica separado por cliente, aluno e internação",
+      "A Donna sugere a resposta; o que você liberar, ela responde sozinha",
+      "Compromisso marcado direto da conversa, com lembrete e confirmação",
+      "Atualização semanal da internação: conferência na quinta, conta na sexta",
+    ],
     fase: 1,
   },
   {
     capitulo: "04",
-    id: "cursos",
-    titulo: "Plataforma de cursos",
-    itens: ["Área de membros e checkout próprios", "Migração dos alunos da Hotmart", "Agente que edita e publica aulas"],
+    id: "numeros",
+    titulo: "O que os números dizem",
+    itens: [
+      "Cada conversa e cada venda guardam de onde a pessoa veio",
+      "Um painel com quem chegou, quem comprou e quanto custou, por origem",
+      "A Donna explica o que mudou na semana",
+      "O anúncio aprende com quem comprou, com os dados protegidos",
+    ],
     fase: 2,
   },
   {
     capitulo: "05",
-    id: "leads",
-    titulo: "Leads e CRM",
-    itens: ["Funil de leads por origem", "Painel de qualidade por anúncio", "Insights semanais da Donna"],
+    id: "cursos",
+    titulo: "Seus cursos na sua plataforma",
+    itens: [
+      "Área de membros e página de venda no seu endereço",
+      "Cartão, parcelado e Pix",
+      "Alunos e cursos atuais trazidos da Hotmart, sem perder acesso",
+      "Certificado e comunidade da turma",
+    ],
     fase: 2,
   },
   {
     capitulo: "06",
-    id: "cms",
-    titulo: "Conteúdo e SEO",
-    itens: ["CMS do site e do blog", "Agente que pesquisa e escreve posts", "Métricas de tráfego orgânico"],
+    id: "conteudo",
+    titulo: "Conteúdo sem parar a clínica",
+    itens: [
+      "Aula editada: cortes, legendas, capítulos e descrição",
+      "Post para o site, escrito para aparecer no Google",
+      "Artes e apresentações com a sua identidade visual",
+      "Nada vai ao ar sem a sua aprovação",
+    ],
     fase: 3,
-  },
-  {
-    capitulo: "07",
-    id: "estudio",
-    titulo: "Estúdio",
-    itens: ["Documentos com timbre e marca d'água", "Artes para Instagram", "Slides com o manual da marca"],
-    fase: 3,
-  },
-  {
-    capitulo: "08",
-    id: "busca",
-    titulo: "Busca semântica",
-    itens: ["Indexação de prontuários, aulas e docs", "Busca em linguagem natural", "Casos parecidos com o porquê"],
-    fase: 3,
-  },
-  {
-    capitulo: "09",
-    id: "atribuicao",
-    titulo: "Venda real",
-    itens: ["WhatsApp integrado ao CRM", "Conversões offline para Meta e Google", "Relatório de custo por venda"],
-    fase: 2,
   },
 ];
+
+/** Entra no projeto sem capítulo próprio. */
+export const TAMBEM_ENTRA: { titulo: string; texto: string; fase: Fase }[] = [
+  {
+    titulo: "Perguntar sobre seus casos",
+    texto: "Busca nos prontuários e documentos, em português: “cavalos que infiltrei no tarso, como voltaram?”",
+    fase: 3,
+  },
+  {
+    titulo: "Seus dados de hoje",
+    texto: "Migração do SimplesVet, com o cadastro de clientes e animais e o histórico de cada um.",
+    fase: 1,
+  },
+  {
+    titulo: "Relatórios em dois idiomas",
+    texto: "Os modelos saem em português e em inglês, para os clientes de fora.",
+    fase: 1,
+  },
+];
+
+/** Nomes técnicos — só aqui, num rodapé discreto da aba Escopo. */
+export const RODAPE_TECNICO =
+  "Por baixo: app nativo (iOS e Android) com atalho na tela de bloqueio · CRM próprio · API oficial do WhatsApp Business · Google Agenda · leitura de imagem (OCR) e conciliação bancária · busca semântica com embeddings · site com CMS e SEO · Conversions API (Meta) e conversões offline (Google), com dados pessoais em hash SHA-256 · criptografia em trânsito e em repouso.";
 
 export const FASES: { fase: Fase; nome: string; foco: string; entrega: string }[] = [
   {
     fase: 1,
     nome: "Rotina da clínica",
-    foco: "Tirar a digitação do seu dia: prontuário, contas e agenda num só app, com a Donna.",
-    entrega: "Você grava exames, lança contas por foto e marca compromissos por áudio.",
+    foco: "Tirar a digitação do seu dia: atendimento, contas e conversas, com a Donna.",
+    entrega: "Você grava o atendimento da tela bloqueada, lança contas por foto e responde clientes por áudio.",
   },
   {
     fase: 2,
-    nome: "Cursos e vendas",
-    foco: "Trazer os cursos para casa e ligar cada venda à origem do aluno.",
-    entrega: "Cursos na plataforma própria, leads no CRM e anúncios otimizados por venda.",
+    nome: "Números e cursos",
+    foco: "Saber de onde vêm os bons clientes e alunos e vender os cursos sem a taxa.",
+    entrega: "Painel de números, anúncio que aprende com quem compra e cursos na sua plataforma.",
   },
   {
     fase: 3,
-    nome: "Conteúdo e conhecimento",
-    foco: "Transformar o que você já sabe em conteúdo, material e busca.",
-    entrega: "Blog publicado com SEO, estúdio com a sua marca e busca em todo o acervo.",
+    nome: "Conteúdo",
+    foco: "Transformar o que você já sabe em aula, post e arte.",
+    entrega: "Aulas editadas, posts no site e peças com a sua identidade.",
   },
 ];
 

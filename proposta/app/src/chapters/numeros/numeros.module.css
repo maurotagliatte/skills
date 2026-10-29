@@ -1,0 +1,5 @@
+/* RubberSegment ocupando a largura do card */
+.segFull {
+  display: grid !important;
+  width: 100%;
+}

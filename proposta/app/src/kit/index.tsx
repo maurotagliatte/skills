@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type { Icon } from "@tabler/icons-react";
 import { IconPointerFilled, IconSearch, IconSparkles } from "@tabler/icons-react";
+import Noise from "./rb/Noise/Noise";
 import s from "./kit.module.css";
 
 const cx = (...c: (string | false | undefined)[]) => c.filter(Boolean).join(" ");
@@ -54,6 +55,10 @@ export function BrandLogo({
 
 /* ——— Moldura fotográfica ICM ——— */
 
+/**
+ * Foto ICM com a janela por cima (régua Plane). A foto ganha grão fino de filme (React Bits Noise,
+ * estático) para não parecer lisa demais; `grain={0}` desliga.
+ */
 export function Backdrop({
   photo,
   x,
@@ -61,6 +66,7 @@ export function Backdrop({
   w,
   h,
   inset,
+  grain = 0.16,
   children,
 }: {
   photo: string;
@@ -70,14 +76,27 @@ export function Backdrop({
   h: number;
   /** margem da foto ao redor da janela */
   inset?: string;
+  /** intensidade do grão (0–1, padrão 0,16; 0 = sem grão) */
+  grain?: number;
   children?: ReactNode;
 }) {
   return (
-    <div className={s.backdrop} style={{ left: x, top: y, width: w, height: h, backgroundImage: `url(/bg/${photo}.webp)` }}>
+    <div className={s.backdrop} style={{ left: x, top: y, width: w, height: h }}>
+      <PhotoGrain photo={photo} grain={grain} />
       <div className={s.backdropInner} style={inset ? { inset } : undefined}>
         {children}
       </div>
     </div>
+  );
+}
+
+/** Só a camada de foto + grão (para molduras próprias, ex.: miniaturas). Preenche o pai posicionado. */
+export function PhotoGrain({ photo, grain = 0.16, position = "center" }: { photo: string; grain?: number; position?: string }) {
+  return (
+    <>
+      <div className={s.backdropPhoto} style={{ backgroundImage: `url(/bg/${photo}.webp)`, backgroundPosition: position }} />
+      {grain > 0 && <Noise opacity={grain} fps={0} size={1} contrast={0.7} blendMode="overlay" />}
+    </>
   );
 }
 

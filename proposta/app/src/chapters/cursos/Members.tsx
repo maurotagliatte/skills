@@ -3,7 +3,20 @@
 import { motion } from "motion/react";
 import { IconLock, IconPlayerPlayFilled, IconCircleCheckFilled, IconCircle, IconBell, IconWorld } from "@tabler/icons-react";
 import { BrandLogo, Chip, Avatar } from "@/kit";
-import type { Aula } from "./agent";
+
+/** A aula do caso do Trovão, publicada no Módulo 3 (a mesma que o capítulo 06 edita). */
+const AULA = {
+  titulo: "Claudicação posterior: o caso do Trovão",
+  descricao:
+    "Como conduzir a avaliação de um membro posterior do início ao fim: o trote em linha reta e no círculo, a flexão e o bloqueio. Com o caso do Trovão, Quarto de Milha de 8 anos (paciente de exemplo).",
+  capitulos: [
+    { tempo: "00:00", titulo: "O que a queixa já conta" },
+    { tempo: "04:12", titulo: "Trote em linha reta e no círculo" },
+    { tempo: "11:38", titulo: "Flexão de jarrete: quando confiar" },
+    { tempo: "18:05", titulo: "Bloqueios: sequência e leitura" },
+    { tempo: "25:40", titulo: "Caso Trovão: do exame à conduta" },
+  ],
+};
 
 const MODULO = [
   { t: "Anatomia funcional do posterior", d: "24 min", ok: true },
@@ -11,8 +24,9 @@ const MODULO = [
   { t: "Exame em estação", d: "19 min", ok: false },
 ];
 
-export function Members({ aula, show }: { aula: Partial<Aula>; show: boolean }) {
-  const caps = (aula.capitulos ?? []).filter((c) => c?.tempo && c?.titulo);
+export function Members({ show }: { show: boolean }) {
+  const aula = AULA;
+  const caps = aula.capitulos;
   return (
     <div
       style={{
@@ -48,14 +62,15 @@ export function Members({ aula, show }: { aula: Partial<Aula>; show: boolean }) 
             fontSize: 12,
           }}
         >
-          <IconLock size={12} /> cursos.gabrielaguenka.com.br/biomecanica/modulo-3
+          <IconLock size={12} /> cursos.gabrielaguenka.com.br/modulo-3
         </span>
       </div>
       {/* cabeçalho com a marca dela */}
       <div style={{ display: "flex", alignItems: "center", gap: 18, padding: "0 24px", borderBottom: "1px solid var(--border)", background: "#fff" }}>
         <BrandLogo brand="guenka" height={50} />
-        <span style={{ fontWeight: 600 }}>Biomecânica Equina Aplicada</span>
-        <span style={{ display: "flex", gap: 16, marginLeft: 18, color: "var(--text-2)" }}>
+        <span style={{ fontWeight: 600 }}>Curso online</span>
+        <Chip tone="amber">nome a confirmar</Chip>
+        <span style={{ display: "flex", gap: 16, marginLeft: 8, color: "var(--text-2)" }}>
           <b style={{ color: "var(--text-1)", fontWeight: 500 }}>Módulos</b>
           <span>Materiais</span>
           <span>Comunidade</span>

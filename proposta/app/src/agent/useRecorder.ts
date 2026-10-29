@@ -72,8 +72,9 @@ export function useRecorder() {
       body.append("audio", new Blob(chunks.current, { type: r.mimeType }), "exame.webm");
       const res = await fetch("/api/stt", { method: "POST", body });
       if (!res.ok) return undefined;
-      const { text } = (await res.json()) as { text?: string };
-      return text?.trim() || undefined;
+      // sem serviço de transcrição a rota responde 200 com { text: null, available: false }
+      const { text } = (await res.json()) as { text?: string | null; available?: boolean };
+      return typeof text === "string" ? text.trim() || undefined : undefined;
     } catch {
       return undefined;
     } finally {

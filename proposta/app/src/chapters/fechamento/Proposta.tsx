@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { IconArrowRight, IconCircleCheckFilled, IconClockHour4 } from "@tabler/icons-react";
 import { BrandLogo, Button, Chip } from "@/kit";
-import { MODULOS, FASES, INVESTIMENTO, A_DEFINIR, type Fase } from "./escopo";
+import SlideCommit from "@/kit/rb/SlideCommit/SlideCommit";
+import { MODULOS, FASES, INVESTIMENTO, A_DEFINIR, TAMBEM_ENTRA, RODAPE_TECNICO, type Fase } from "./escopo";
 
 const TABS = ["Escopo", "Fases", "Investimento", "Aceite"] as const;
 type Tab = (typeof TABS)[number];
@@ -51,7 +52,7 @@ export function Proposta() {
     <div
       style={{
         width: "min(1160px, calc(100vw - 80px))",
-        height: "min(700px, calc(100vh - 160px))",
+        height: "min(760px, calc(100vh - 116px))",
         background: "#fff",
         color: "var(--text-1)",
         borderRadius: 20,
@@ -61,13 +62,11 @@ export function Proposta() {
         overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, padding: "26px 32px 16px" }}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, padding: "22px 32px 14px" }}>
         <div>
-          <div className="eyebrow" style={{ marginBottom: 8 }}>
-            Proposta · Plataforma Gabriela Guenka
-          </div>
+          <div style={{ marginBottom: 8, color: "var(--text-2)", fontSize: 14 }}>Proposta para a Dra. Gabriela Guenka</div>
           <div className="display" style={{ fontSize: 32 }}>
-            Nove módulos, um sistema, em três fases.
+            Seis soluções, em três fases.
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--text-3)" }}>
@@ -79,7 +78,7 @@ export function Proposta() {
 
       {/* abas com sublinhado (gramática das LPs da Plane) */}
       <div role="tablist" style={{ display: "flex", gap: 26, padding: "0 32px", borderBottom: "1px solid var(--border)" }}>
-        {TABS.map((t, i) => (
+        {TABS.map((t) => (
           <button
             key={t}
             role="tab"
@@ -87,16 +86,13 @@ export function Proposta() {
             onClick={() => setTab(t)}
             style={{ position: "relative", background: "none", border: 0, padding: "10px 0 12px", fontSize: 14, fontWeight: 500, color: t === tab ? "var(--text-1)" : "var(--text-3)" }}
           >
-            <span className="mono" style={{ fontSize: 11, marginRight: 6, color: t === tab ? "var(--k-red)" : "var(--text-3)" }}>
-              0{i + 1}
-            </span>
             {t}
             {t === tab && <motion.span layoutId="tabline" style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 2, background: "var(--text-1)" }} />}
           </button>
         ))}
       </div>
 
-      <div style={{ position: "relative", overflow: "auto", padding: "22px 32px" }}>
+      <div style={{ position: "relative", overflow: "auto", padding: "16px 32px" }}>
         <AnimatePresence mode="wait">
           <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3 }}>
             {tab === "Escopo" && <Escopo />}
@@ -125,25 +121,44 @@ export function Proposta() {
 
 function Escopo() {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-      {MODULOS.map((m) => (
-        <div key={m.id} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "14px 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span className="mono" style={{ fontSize: 11, color: "var(--k-red)" }}>
-              {m.capitulo}
-            </span>
-            <b style={{ fontWeight: 600, fontSize: 14 }}>{m.titulo}</b>
-            <span style={{ marginLeft: "auto" }}>
-              <Chip tone={faseTone(m.fase)}>Fase {m.fase}</Chip>
-            </span>
+    <div style={{ display: "grid", gap: 14, fontSize: 12.5 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+        {MODULOS.map((m) => (
+          <div key={m.id} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "11px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 12, color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>{m.capitulo}</span>
+              <b style={{ fontWeight: 600, fontSize: 14 }}>{m.titulo}</b>
+              <span style={{ marginLeft: "auto" }}>
+                <Chip tone={faseTone(m.fase)}>Fase {m.fase}</Chip>
+              </span>
+            </div>
+            <ul style={{ margin: 0, padding: "0 0 0 16px", color: "var(--text-2)", display: "grid", gap: 2, lineHeight: 1.4 }}>
+              {m.itens.map((it) => (
+                <li key={it}>{it}</li>
+              ))}
+            </ul>
           </div>
-          <ul style={{ margin: 0, padding: "0 0 0 16px", color: "var(--text-2)", display: "grid", gap: 3 }}>
-            {m.itens.map((it) => (
-              <li key={it}>{it}</li>
-            ))}
-          </ul>
+        ))}
+      </div>
+
+      <div>
+        <div className="display" style={{ fontSize: 17, marginBottom: 8 }}>
+          Também entra
         </div>
-      ))}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+          {TAMBEM_ENTRA.map((t) => (
+            <div key={t.titulo}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <b style={{ fontWeight: 600, fontSize: 14 }}>{t.titulo}</b>
+                <span style={{ color: "var(--text-3)", fontSize: 12 }}>Fase {t.fase}</span>
+              </div>
+              <div style={{ color: "var(--text-2)", lineHeight: 1.5 }}>{t.texto}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p style={{ margin: 0, color: "var(--text-3)", fontSize: 11, lineHeight: 1.5 }}>{RODAPE_TECNICO}</p>
     </div>
   );
 }
@@ -260,6 +275,7 @@ function Investimento() {
 
 function Aceite() {
   const [ok, setOk] = useState(false);
+  const reduce = useReducedMotion();
   // TODO(aceite): integração pendente — hoje o aceite é só um estado local, nada é enviado.
   // Quando houver backend, registrar aqui (data, IP, versão da proposta) e notificar a Khard.
   return (
@@ -267,10 +283,10 @@ function Aceite() {
       <div style={{ position: "relative", padding: "38px 36px 34px", borderRadius: 18, background: "#fff", boxShadow: "0 24px 60px -24px rgba(0,0,0,.35)", border: "1px solid var(--border)" }}>
         <div style={{ position: "absolute", inset: 14, border: "1px solid var(--k-red)", borderRadius: 10, pointerEvents: "none" }} />
         <span className="mono" style={{ position: "absolute", top: 8, left: 22, fontSize: 12, color: "var(--k-red)", background: "#fff", padding: "0 6px", lineHeight: 1 }}>
-          K♠ 10
+          K♠ 07
         </span>
         <span className="mono" style={{ position: "absolute", bottom: 8, right: 22, fontSize: 12, color: "var(--k-red)", background: "#fff", padding: "0 6px", lineHeight: 1, transform: "rotate(180deg)" }}>
-          K♠ 10
+          K♠ 07
         </span>
         <AnimatePresence mode="wait">
           {!ok ? (
@@ -279,19 +295,32 @@ function Aceite() {
                 Proposta
               </div>
               <div className="display" style={{ fontSize: 26, marginBottom: 14 }}>
-                Plataforma Gabriela Guenka
+                Do haras à venda, num sistema só
               </div>
               <div style={{ display: "grid", gap: 8, marginBottom: 22, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                <Linha k="Escopo" v={`${MODULOS.length} módulos`} />
+                <Linha k="Escopo" v={`${MODULOS.length} soluções`} />
                 <Linha k="Fases" v={`${FASES.length}, em sequência`} />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ color: "var(--text-3)" }}>Investimento</span>
                   <Valor v={INVESTIMENTO.total} />
                 </div>
               </div>
-              <Button onClick={() => setOk(true)} style={{ width: "100%" }}>
-                Quero seguir com o projeto
-              </Button>
+              {/* deslizar é um gesto deliberado: evita aceite por clique acidental (teclado: End) */}
+              <SlideCommit
+                label="Deslize para seguir com o projeto"
+                doneLabel="Combinado"
+                width={328}
+                height={52}
+                radius={12}
+                trackColor="#141515"
+                handleColor="#eb3102"
+                successColor="#1f8a4c"
+                holdMs={0}
+                className="slide-commit--khard"
+                onConfirm={() => new Promise((r) => setTimeout(r, 450))}
+                onDone={() => setTimeout(() => setOk(true), reduce ? 0 : 900)}
+              />
+              <p style={{ margin: "10px 0 0", color: "var(--text-3)", fontSize: 12, lineHeight: 1.5 }}>Nada é enviado daqui. O aceite só marca esta tela.</p>
             </motion.div>
           ) : (
             <motion.div key="ok" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: "center", padding: "18px 0" }}>
@@ -300,7 +329,7 @@ function Aceite() {
                 Combinado.
               </div>
               <p style={{ margin: 0, color: "var(--text-2)", lineHeight: 1.55 }}>
-                O próximo passo é a reunião de kickoff. Responda a mensagem em que recebeu este link para marcarmos o dia e começarmos pela Fase 1.
+                Nada foi enviado por esta tela. Para seguir, responda a mensagem em que recebeu este link: marcamos a primeira conversa e começamos pela Fase 1.
               </p>
             </motion.div>
           )}
@@ -314,8 +343,8 @@ function Aceite() {
           Próximos passos
         </div>
         {[
-          ["Kickoff", "Uma conversa para fechar detalhes e receber os seus modelos de prontuário."],
-          ["Ajuste do escopo da Fase 1", "Prontuário, financeiro e agenda no formato exato da sua rotina."],
+          ["Primeira conversa", "Para fechar detalhes e ver os relatórios que você mais envia."],
+          ["Ajuste da Fase 1", "Atendimento, contas e conversas no jeito da sua rotina."],
           ["Cronograma e início", "Datas de entrega por módulo e acesso ao ambiente de testes."],
         ].map(([t, d], i) => (
           <div key={t} style={{ display: "grid", gridTemplateColumns: "34px 1fr", gap: 10, padding: "14px 0", borderTop: "1px solid var(--border)" }}>

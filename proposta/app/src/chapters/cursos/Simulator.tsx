@@ -23,7 +23,7 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
             <Line label={`9,9% sobre ${brl(c.faturamento)}`} v={r.hotPct} />
             <Line label={`R$ 2,49 × ${num(r.vendas)} vendas`} v={r.hotFixo} />
           </Col>
-          <Col title="Plataforma própria · gateway Asaas" total={r.propria} ef={r.efPropria} accent>
+          <Col title="Sua plataforma · pagamento pelo Asaas" total={r.propria} ef={r.efPropria} accent>
             <Line label={`À vista · 2,99% × ${brl(r.baseVista)}`} v={r.vista} />
             <Line label={`Parcelado 2–6x · 3,49% × ${brl(r.baseParc)}`} v={r.parc} />
             <Line label={`R$ 0,49 × ${num(r.vendas)} vendas`} v={r.fixo} />
@@ -35,17 +35,17 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
         <div style={{ marginTop: 18, padding: "14px 16px", border: "1px solid var(--border)", borderRadius: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span style={{ fontWeight: 500 }}>Taxa efetiva sobre o faturamento</span>
-            <span style={{ color: "var(--text-3)", fontSize: 12 }}>meta comercial: pelo menos {num(META_PP, 1)} p.p. abaixo</span>
+            <span style={{ color: "var(--text-3)", fontSize: 12 }}>só recomendamos com {num(META_PP, 1)} p.p. ou mais de diferença</span>
           </div>
           <Bar label="Hotmart" v={r.efHotmart} color="#5c5f62" />
-          <Bar label="Própria (só gateway)" v={r.efGateway} color="#c9cbcd" />
-          <Bar label="Própria (com plataforma)" v={r.efPropria} color="var(--k-red)" marker={r.efHotmart - META_PP} />
+          <Bar label="Sua (só pagamento)" v={r.efGateway} color="#c9cbcd" />
+          <Bar label="Sua (com a plataforma)" v={r.efPropria} color="var(--k-red)" marker={r.efHotmart - META_PP} />
         </div>
 
         {/* resultado */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.15fr", gap: 10, marginTop: 14 }}>
           <Big label="Economia bruta (só taxas)" v={r.bruta} sub={`${num(r.ppBruta, 1)} p.p. abaixo`} />
-          <Big label="Economia líquida (com plataforma)" v={r.liquida} sub={`${num(r.ppLiquida, 1)} p.p. abaixo`} />
+          <Big label="Economia líquida (com plataforma)" v={r.liquida} sub={r.ppLiquida >= 0 ? `${num(r.ppLiquida, 1)} p.p. abaixo` : `${num(-r.ppLiquida, 1)} p.p. acima: custa mais`} />
           <div
             style={{
               borderRadius: 10,
@@ -62,10 +62,10 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
             </div>
             <div style={{ fontSize: 12 }}>
               {ok
-                ? `já descontando a plataforma — acima da meta de ${num(META_PP, 1)} p.p.`
+                ? `já descontando a plataforma: compensa mudar`
                 : r.liquida < 0
-                  ? "neste volume a plataforma própria ainda não se paga"
-                  : `neste volume, abaixo da meta de ${num(META_PP, 1)} p.p.`}
+                  ? "neste volume, a plataforma própria ainda não se paga: não recomendamos mudar"
+                  : `diferença pequena: neste volume, mudar pode não compensar`}
             </div>
           </div>
         </div>
@@ -73,13 +73,13 @@ export function Simulator({ c, r }: { c: Cenario; r: Resultado }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px", marginTop: 14, padding: "10px 14px", background: "#f7f7f7", borderRadius: 10, color: "var(--text-2)" }}>
           <b style={{ color: "var(--text-1)", fontWeight: 500 }}>Numa venda de {brlCents(c.ticket)}</b>
           <span>Hotmart {brlCents(c.ticket * TAXAS.hotmart.pct + TAXAS.hotmart.fixo)}</span>
-          <span>Própria à vista {brlCents(c.ticket * TAXAS.asaasVista.pct + TAXAS.asaasVista.fixo)}</span>
-          <span>Própria parcelado {brlCents(c.ticket * TAXAS.asaasParcelado.pct + TAXAS.asaasParcelado.fixo)}</span>
+          <span>Sua, à vista {brlCents(c.ticket * TAXAS.asaasVista.pct + TAXAS.asaasVista.fixo)}</span>
+          <span>Sua, parcelado {brlCents(c.ticket * TAXAS.asaasParcelado.pct + TAXAS.asaasParcelado.fixo)}</span>
           <span style={{ color: "var(--text-3)" }}>+ plataforma, rateada no ano</span>
         </div>
 
         <p style={{ marginTop: "auto", marginBottom: 6, fontSize: 10.5, lineHeight: 1.5, color: "var(--text-3)" }}>
-          Fontes: Hotmart, central de ajuda — 9,9% + R$ 2,49 por venda (vigente desde 21/09/2026). Asaas, preços e taxas — cartão à vista 2,99% + R$ 0,49;
+          Fontes: Hotmart, central de ajuda: 9,9% + R$ 2,49 por venda (desde 21/09/2026; confirmar o plano dela). Asaas, preços e taxas: cartão à vista 2,99% + R$ 0,49;
           parcelado 2–6x 3,49% + R$ 0,49. Não inclui antecipação de recebíveis. O custo mensal da plataforma é estimativa (hospedagem, vídeo, área de
           membros e antifraude) e será fechado no escopo. Números a confirmar com o seu faturamento real.
         </p>
