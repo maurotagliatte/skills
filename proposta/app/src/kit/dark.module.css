@@ -1,0 +1,82 @@
+/* ——— Controles para fundo escuro (cards "Sua vez") ——— */
+.field {
+  width: 100%;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-inv);
+  outline: none;
+}
+.field:focus,
+.fieldBox:focus-within {
+  border-color: #4a4d50;
+}
+.fieldInput {
+  height: 38px;
+  padding: 0 12px;
+}
+.fieldArea {
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: none;
+}
+.fieldBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+}
+.fieldBare {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--text-inv);
+}
+
+.list {
+  display: grid;
+  gap: 6px;
+}
+.listItem {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-dark);
+  background: transparent;
+  color: var(--text-inv-2);
+  line-height: 1.35;
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pill {
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border-dark);
+  background: transparent;
+  color: var(--text-inv-2);
+  font-size: 12px;
+}
+.pillActive {
+  background: var(--dark-3);
+  color: var(--text-inv);
+}
+
+.liveCard {
+  width: 380px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(17, 18, 18, 0.86);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-dark);
+  color: var(--text-inv);
+}

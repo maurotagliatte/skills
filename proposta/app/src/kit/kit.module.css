@@ -1,0 +1,296 @@
+/* ——— Moldura fotográfica (foto ICM com a janela por cima, como as LPs da Plane) ——— */
+.backdrop {
+  position: absolute;
+  border-radius: var(--r-3xl);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+.backdropPhoto {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  /* a régua tira a cor da foto: um pouco mais de saturação que o arquivo */
+  filter: saturate(1.12) contrast(1.03);
+}
+.backdropInner {
+  position: absolute;
+  inset: 6% 6% -2% 6%;
+}
+
+/* ——— Janela do app ——— */
+.window {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-window);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 44px 1fr;
+  color: var(--text-1);
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  background: #fcfcfc;
+}
+.workspace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.search {
+  margin: 0 auto;
+  width: 34%;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-3);
+  background: var(--surface);
+  font-size: 12px;
+}
+.kbd {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+}
+.assistantBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--surface);
+}
+.body {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 0;
+}
+.bodyWithAside {
+  grid-template-columns: 180px 1fr 280px;
+}
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #fcfcfc;
+}
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: var(--r-md);
+  color: var(--text-2);
+}
+.navItemActive {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-1);
+  font-weight: 500;
+}
+.navLabel {
+  margin: 12px 8px 4px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.main {
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+.aside {
+  border-left: 1px solid var(--border);
+  min-width: 0;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* ——— Átomos ——— */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.chipNeutral { background: #f3f4f4; color: var(--text-2); border-color: var(--border); }
+.chipRed { background: var(--k-red-soft); color: #a32202; }
+.chipAmber { background: var(--amber-soft); color: #8a5300; }
+.chipGreen { background: var(--green-soft); color: #146136; }
+.chipViolet { background: var(--violet-soft); color: #4c3a9c; }
+.chipSky { background: var(--sky-soft); color: #075a7a; }
+.chipDark { background: var(--dark-3); color: var(--text-inv); border-color: var(--border-dark); }
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  flex: none;
+}
+
+.prop {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  min-height: 30px;
+  gap: 8px;
+}
+.propLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+}
+
+/* ——— Agente ——— */
+.agentRow {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-lg);
+}
+.agentBadge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f1f1f1;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.statusWorking { color: var(--amber); font-weight: 500; }
+.statusDone { color: var(--green); font-weight: 500; }
+.statusWaiting { color: var(--text-3); font-weight: 500; }
+.agentText { color: var(--text-2); }
+/* linha densa de lista (equipe do estúdio) */
+.agentRowList { padding: 8px 0; transition: opacity 0.4s; }
+.agentRowWaiting { opacity: 0.6; }
+/* sobre card escuro */
+.agentRowDark .agentBadge { background: var(--dark-3); color: var(--text-inv-2); border-color: var(--border-dark); }
+.agentRowDark .agentText,
+.agentRowDark .statusWaiting { color: var(--text-inv-2); }
+.agentRowDark .statusDone { color: #7ee2a8; }
+
+.cursor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+}
+.cursorTag {
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ——— Cartão de escopo como carta de baralho (identidade Khard) ——— */
+.card {
+  position: relative;
+  width: 360px;
+  padding: 36px 34px 30px;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--text-1);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6);
+}
+.cardFrame {
+  position: absolute;
+  inset: 14px;
+  border: 1px solid var(--k-red);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.cardIndex {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--k-red);
+  background: #fff;
+  padding: 0 6px;
+  line-height: 1;
+}
+.cardIndexTop { top: 8px; left: 22px; }
+.cardIndexBottom { bottom: 8px; right: 22px; transform: rotate(180deg); }
+
+/* ——— Overlay de interação ("Sua vez") ——— */
+.pause {
+  width: 380px;
+  padding: 22px;
+  border-radius: var(--r-2xl);
+  background: rgba(17, 18, 18, 0.86);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-dark);
+  color: var(--text-inv);
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-lg);
+  border: 1px solid transparent;
+  font-weight: 500;
+  font-size: 13px;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.btn:active { transform: scale(0.98); }
+.btnPrimary { background: var(--k-red); color: #fff; }
+.btnPrimary:hover { background: #d32b00; }
+.btnGhost { background: transparent; color: var(--text-inv-2); border-color: var(--border-dark); }
+.btnGhost:hover { color: var(--text-inv); background: rgba(255, 255, 255, 0.04); }
+.btnLight { background: #fff; color: var(--text-1); }
+.btnOutline { background: transparent; color: var(--text-1); border-color: var(--border-strong); }
+
+.logoSlot {
+  display: inline-grid;
+  place-items: center;
+  border: 1px dashed currentColor;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  text-align: center;
+  line-height: 1.2;
+  padding: 2px;
+}

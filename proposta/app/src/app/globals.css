@@ -1,0 +1,195 @@
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+:root {
+  /* Khard */
+  --k-red: #eb3102;
+  --k-red-soft: #fde6de;
+  --k-black: #000000;
+  --k-paper: #f1f1f1;
+  --k-gray: #ababab;
+
+  /* Cliente — Gabriela Guenka */
+  --gg-wine: #7b2a2e;
+  --gg-ink: #2b2b2b;
+
+  /* Gramática das LPs da Plane, com a cor da Khard no lugar do azul */
+  --surface: #ffffff;
+  --canvas: var(--k-paper);
+  --stage: #050505;
+  /* campo claro da régua Plane: <Stage tone="light"> */
+  --canvas-light: #eff0f0;
+  --dark-1: #111212;
+  --dark-2: #1b1c1d;
+  --dark-3: #262829;
+  --text-1: #141515;
+  --text-2: #5c5f62;
+  --text-3: #8a8d90;
+  --text-inv: #f6f6f6;
+  --text-inv-2: #a3a6a9;
+  --border: #e4e5e6;
+  --border-strong: #d3d5d7;
+  --border-dark: #2c2e30;
+  --accent: var(--k-red);
+  --amber: #c77c02;
+  --amber-soft: #fff3d6;
+  --green: #1f8a4c;
+  --green-soft: #ddf3e5;
+  --violet: #6e56cf;
+  --violet-soft: #ede9fe;
+  --sky: #0b7fab;
+  --sky-soft: #ddf1fa;
+
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-xl: 12px;
+  --r-2xl: 16px;
+  --r-3xl: 24px;
+
+  --shadow-window: 0 1px 0 rgba(0, 0, 0, 0.04), 0 12px 40px -12px rgba(0, 0, 0, 0.35), 0 40px 80px -40px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 16px -6px rgba(0, 0, 0, 0.12);
+
+  --font-display: "Satoshi", "Inter", system-ui, sans-serif;
+  --font-ui: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+
+  --ease-cam: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--stage);
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, [role="slider"]:focus-visible, a:focus-visible { outline: 2px solid var(--k-red); outline-offset: 2px; }
+.k-round:active { transform: scale(0.96); }
+input, textarea { font: inherit; }
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 430;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.mono { font-family: var(--font-mono); }
+
+/* ——— Cards sobre o palco (<Overlay>) ——— */
+.k-overlay[data-side="right"] {
+  scale: var(--ui-scale, 1);
+  transform-origin: right center;
+}
+.k-overlay-body {
+  max-height: calc((100dvh - 120px) / var(--ui-scale, 1));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  border-radius: 18px;
+}
+.k-overlay-body::-webkit-scrollbar { display: none; }
+.k-overlay[data-side="center"] .k-overlay-body { max-height: none; overflow: visible; }
+
+/* celular em pé: o card vira uma folha embaixo, na largura da tela, e o palco sobe (Stage) */
+@media (max-width: 640px) and (orientation: portrait) {
+  .k-overlay[data-side="right"] {
+    top: auto !important;
+    bottom: calc(66px + env(safe-area-inset-bottom)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    translate: none !important;
+    scale: 1;
+  }
+  .k-overlay[data-side="right"] .k-overlay-body { max-height: 54dvh; }
+  .k-overlay[data-side="right"] .k-overlay-body > * { width: auto !important; max-width: 100%; }
+}
+
+
+/* ——— Reprodução: barra que anda, espera e pulso do botão pedido ——— */
+.k-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--k-red);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+/* só o salto final (cartão de escopo) anima; durante o roteiro o valor já muda a cada quadro */
+.k-fill.k-full { transform: scaleX(1) !important; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.k-run {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 60%;
+  width: 40%;
+  overflow: hidden;
+}
+.k-run::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(235, 49, 2, 0.9), transparent);
+  animation: k-run 1.3s linear infinite;
+}
+@keyframes k-run { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.k-wait {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 99px;
+  background: var(--k-red);
+  animation: k-wait 1.4s ease-in-out infinite;
+}
+@keyframes k-wait { 0%, 100% { box-shadow: 0 0 0 0 rgba(235, 49, 2, 0.55); } 50% { box-shadow: 0 0 0 6px rgba(235, 49, 2, 0); } }
+
+/* o botão que a Donna está pedindo: um pulso discreto contínuo e um mais forte ao tocar fora */
+button[data-advance]:not(:disabled) { animation: k-ask 2.4s ease-in-out infinite; }
+@keyframes k-ask { 0%, 100% { box-shadow: 0 0 0 0 rgba(235, 49, 2, 0); } 50% { box-shadow: 0 0 0 6px rgba(235, 49, 2, 0.22); } }
+button[data-advance].k-nudge { animation: k-nudge 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes k-nudge {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(235, 49, 2, 0.6); }
+  35% { transform: scale(1.06); }
+  100% { transform: scale(1); box-shadow: 0 0 0 14px rgba(235, 49, 2, 0); }
+}
+
+/* esperando a Donna: o palco escurece um pouco (os cards e o cromo não) */
+.k-stage-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+[data-play="waiting"] .k-stage-dim { opacity: 1; }
+
+/* toque: alvos maiores na barra de capítulos */
+@media (pointer: coarse) {
+  .k-progress { height: 22px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

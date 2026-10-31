@@ -1,0 +1,219 @@
+/* ——— Folha A4 ——— */
+.sheet {
+  position: relative;
+  width: 700px;
+  min-height: 990px;
+  padding: 52px 62px 44px;
+  background: #fff;
+  color: var(--gg-ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 18px 40px -18px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.watermark {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  translate: -50% -50%;
+  opacity: 0.06;
+  pointer-events: none;
+}
+.sheetScroll {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 26px 0 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #f3f3f2;
+  scrollbar-width: none;
+}
+.sheetScroll::-webkit-scrollbar { display: none; }
+
+/* ——— Impressão: só a folha sai no papel ——— */
+.printRoot { display: none; }
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  :global(html):has(.printRoot),
+  :global(body):has(.printRoot) {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  :global(body):has(.printRoot) > *:not(.printRoot) { display: none !important; }
+  .printRoot { display: block; }
+  .printRoot .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm 20mm 16mm;
+    box-shadow: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ——— Editor (Camadas · canvas · Propriedades) ——— */
+.editor {
+  display: grid;
+  grid-template-columns: 200px 1fr 236px;
+  height: 100%;
+  min-height: 0;
+}
+.panel {
+  border-right: 1px solid var(--border);
+  background: #fcfcfc;
+  padding: 12px 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+.panelRight {
+  border-right: 0;
+  border-left: 1px solid var(--border);
+}
+.panelTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  padding: 0 4px 10px;
+}
+.layer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.layerActive {
+  background: var(--violet-soft);
+  color: var(--text-1);
+}
+.canvas {
+  position: relative;
+  overflow: hidden;
+  background-color: #ececea;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.selection {
+  position: absolute;
+  border: 1.5px solid;
+  pointer-events: none;
+  transition: all 0.6s var(--ease-cam);
+}
+.handle {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #fff;
+  border: 1.5px solid;
+}
+.dims {
+  position: absolute;
+  left: 50%;
+  bottom: -24px;
+  translate: -50% 0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.propRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.fieldLabel {
+  color: var(--text-3);
+  font-size: 11px;
+}
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  flex: none;
+}
+.sectionLabel {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 500;
+  margin: 14px 2px 8px;
+}
+
+/* ——— Abas (sublinhado progressivo, como nas LPs da Plane) ——— */
+.tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 22px;
+  height: 44px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+.tabActive { color: var(--text-1); }
+.tabActive::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--text-1);
+}
+
+/* ——— Slides ——— */
+.thumb {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 6px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.thumbActive { background: rgba(123, 42, 46, 0.08); }
+.thumbFrame {
+  border-radius: 4px;
+  overflow: hidden;
+  outline: 1px solid var(--border);
+}
+.thumbActive .thumbFrame { outline: 2px solid var(--gg-wine); }
