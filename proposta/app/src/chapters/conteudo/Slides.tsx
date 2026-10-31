@@ -6,6 +6,7 @@ import { BrandLogo } from "@/kit";
 import type { Deck, Slide } from "./agent";
 import type { Status } from "./equipe";
 import css from "./conteudo.module.css";
+import { later as after, cancel } from "@/engine/clock";
 
 type Dk = Partial<Deck>;
 const SW = 1280;
@@ -146,8 +147,8 @@ export function SlidesView({ d, n, done }: { d: Dk; n: number; done: boolean }) 
       setPick(null);
       return;
     }
-    const t = setTimeout(() => setPick((p) => p ?? 0), 1400);
-    return () => clearTimeout(t);
+    const t = after(() => setPick((p) => p ?? 0), 1400);
+    return () => cancel(t);
   }, [finished]);
   const cur = pick ?? Math.max(0, shown.length - 1);
   const deckTitle = slides[0]?.titulo;

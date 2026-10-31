@@ -53,7 +53,7 @@ export default function AberturaChapter({ onNext }: ChapterProps) {
           <SceneTitle text={TITLE} size={64} delay={0.15} />
         </h1>
         <motion.div {...fade(0.3 + SETTLE * 0.6)} style={{ marginTop: 32, display: "flex", alignItems: "center", gap: 18 }}>
-          <Button icon={IconArrowRight} onClick={start} disabled={leaving} style={{ height: 44, padding: "0 20px", fontSize: 15, opacity: 1 }}>
+          <Button icon={IconArrowRight} onClick={start} disabled={leaving} advance style={{ height: 44, padding: "0 20px", fontSize: 15, opacity: 1 }}>
             Começar
           </Button>
         </motion.div>

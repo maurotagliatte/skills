@@ -16,6 +16,7 @@ import { Week, paraGrade, type Activity } from "./Week";
 import { Internacao } from "./Internacao";
 import { EXEMPLO_TRANSCRICAO, HOJE_CENA, type Resposta } from "./agent";
 import { proximaQuinta, segundaDa, parseData } from "./datas";
+import { later as after, cancel, wait } from "@/engine/clock";
 
 const W = 5200;
 const H = 1500;
@@ -72,36 +73,36 @@ export default function ConversasChapter({ onNext }: ChapterProps) {
   // terminou: mostra a quinta na agenda e volta para ela aprovar a resposta
   useEffect(() => {
     if (phase === "live" && agent.run.status === "done" && !viuSemana) {
-      const t = setTimeout(async () => {
+      const t = after(async () => {
         setViuSemana(true);
         await stage.current?.goTo(WEEK_SHOT);
-        await new Promise((res) => setTimeout(res, 2600));
+        await wait(2600);
         await stage.current?.goTo(LIVE_SHOT);
         setPhase("aprovar");
       }, 1200);
-      return () => clearTimeout(t);
+      return () => cancel(t);
     }
   }, [phase, agent.run.status, viuSemana]);
 
   useEffect(() => {
     if (envioRicardo === "enviando") {
-      const t = setTimeout(() => setEnvioRicardo("enviada"), 1000);
-      return () => clearTimeout(t);
+      const t = after(() => setEnvioRicardo("enviada"), 1000);
+      return () => cancel(t);
     }
     if (envioRicardo === "enviada" && phase === "aprovar") {
-      const t = setTimeout(() => irParaGrupo(), 2200);
-      return () => clearTimeout(t);
+      const t = after(() => irParaGrupo(), 2200);
+      return () => cancel(t);
     }
   }, [envioRicardo, phase]);
 
   useEffect(() => {
     if (grupo === "abrindo") {
-      const t = setTimeout(() => setGrupo("aberta"), 1100);
-      return () => clearTimeout(t);
+      const t = after(() => setGrupo("aberta"), 1100);
+      return () => cancel(t);
     }
     if (grupo === "aberta" && phase === "grupo") {
-      const t = setTimeout(() => setPhase("scope"), 2800);
-      return () => clearTimeout(t);
+      const t = after(() => setPhase("scope"), 2800);
+      return () => cancel(t);
     }
   }, [grupo, phase]);
 

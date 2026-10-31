@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { later as after, cancel } from "@/engine/clock";
 
 /* ——— Valores que chegam do agente ——— */
 
@@ -82,8 +83,8 @@ export function useReveal(available: number, ms: number, { active = true, key = 
   const n = st.key === key ? st.n : 0;
   useEffect(() => {
     if (!active || n >= available) return;
-    const t = setTimeout(() => setSt({ key, n: n + 1 }), n === 0 ? ms * lead : ms);
-    return () => clearTimeout(t);
+    const t = after(() => setSt({ key, n: n + 1 }), n === 0 ? ms * lead : ms);
+    return () => cancel(t);
   }, [n, available, ms, active, key, lead]);
   return active ? Math.min(n, available) : 0;
 }

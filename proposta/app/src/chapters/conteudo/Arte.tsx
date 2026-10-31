@@ -8,6 +8,7 @@ import { Avatar, BrandLogo, Chip, Cursor } from "@/kit";
 import type { Arte } from "./agent";
 import { EQUIPE, type Membro, type Status } from "./equipe";
 import css from "./conteudo.module.css";
+import { later as after, cancel } from "@/engine/clock";
 
 type A = Partial<Arte>;
 type LayerId = "foto" | "headline" | "subtitulo" | "cta" | "logo";
@@ -172,7 +173,7 @@ export function ArteEditor({ a, n, done, scale = 0.55 }: { a: A; n: number; done
   const finished = done && n >= 5;
 
   useLayoutEffect(() => {
-    const t = setTimeout(() => {
+    const t = after(() => {
       const r: Partial<Record<LayerId, Rect>> = {};
       for (const l of LAYERS) {
         const m = measure(refs.current[l.id], root.current);
@@ -180,7 +181,7 @@ export function ArteEditor({ a, n, done, scale = 0.55 }: { a: A; n: number; done
       }
       setRects(r);
     }, 30);
-    return () => clearTimeout(t);
+    return () => cancel(t);
   }, [n, a.headline, a.subtitulo, a.cta, a.layout]);
 
   const S = scale;

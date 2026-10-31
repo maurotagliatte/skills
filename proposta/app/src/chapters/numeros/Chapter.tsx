@@ -14,6 +14,7 @@ import { Painel, type PainelStatus } from "./Painel";
 import { Simulacao } from "./Simulacao";
 import { PESSOAS, TOTAL, type Modo, type Periodo } from "./data";
 import { PERGUNTAS, perguntaDe, type Resposta } from "./agent";
+import { later as after } from "@/engine/clock";
 
 const W = 5900;
 const H = 1400;
@@ -71,7 +72,7 @@ export default function NumerosChapter({ onNext }: ChapterProps) {
   const ensinar = () => {
     setModo("venda");
     setTocou(true);
-    setTimeout(() => setPeriodo("mes"), 2200);
+    after(() => setPeriodo("mes"), 2200);
   };
 
   return (

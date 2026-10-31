@@ -5,6 +5,7 @@ import { HttpAgent } from "@ag-ui/client";
 import { EventType, type BaseEvent } from "@ag-ui/core";
 import { parsePartialJson } from "./partialJson";
 import type { AgentRequest } from "./protocol";
+import { isPaused, onPauseChange } from "@/engine/clock";
 
 export type ToolCall = { id: string; name: string; argsText: string; args: Record<string, unknown> | undefined; done: boolean };
 
@@ -30,6 +31,19 @@ export function useAgent() {
   const [run, setRun] = useState<AgentRun>(initial);
   const sub = useRef<{ unsubscribe: () => void } | null>(null);
   const watchdog = useRef<ReturnType<typeof setInterval> | null>(null);
+  // com a proposta pausada, os eventos que chegam ficam guardados e entram ao retomar
+  const held = useRef<BaseEvent[]>([]);
+  const handle = useRef<((e: BaseEvent) => void) | null>(null);
+  useEffect(
+    () =>
+      onPauseChange((p) => {
+        if (p) return;
+        const queue = held.current;
+        held.current = [];
+        queue.forEach((e) => handle.current?.(e));
+      }),
+    [],
+  );
 
   const stopWatch = () => {
     if (watchdog.current) clearInterval(watchdog.current);
@@ -55,7 +69,10 @@ export function useAgent() {
       if (retry) setRun((r) => ({ ...r, status: "error" }));
       else launch({ ...req, demo: true }, true);
     };
+    held.current = [];
     watchdog.current = setInterval(() => {
+      // pausado não conta como travado
+      if (isPaused()) lastEvent = Date.now();
       if (Date.now() - lastEvent > AGENT_STALL_MS) fallback();
     }, 1000);
     const agent = new HttpAgent({ url: "/api/agent" });
@@ -73,10 +90,8 @@ export function useAgent() {
       forwardedProps: req,
     });
 
-    sub.current = obs.subscribe({
-      next: (e: BaseEvent) => {
+    const apply = (e: BaseEvent) => {
         if (settled) return;
-        lastEvent = Date.now();
         const ev = e as BaseEvent & Record<string, unknown>;
         switch (e.type) {
           case EventType.CUSTOM:
@@ -118,11 +133,21 @@ export function useAgent() {
             fallback();
             break;
         }
+    };
+    handle.current = apply;
+
+    sub.current = obs.subscribe({
+      next: (e: BaseEvent) => {
+        if (settled) return;
+        lastEvent = Date.now();
+        if (isPaused()) held.current.push(e);
+        else apply(e);
       },
       error: () => fallback(),
       complete: () => {
-        // stream fechou sem RUN_FINISHED: trata como parada
-        if (!settled) fallback();
+        // stream fechou sem RUN_FINISHED: trata como parada (se o fim está guardado pela pausa, o
+        // RUN_FINISHED entra ao retomar; se não vier, o watchdog cuida)
+        if (!settled && held.current.length === 0) fallback();
       },
     });
   }, []);

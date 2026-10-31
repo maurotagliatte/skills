@@ -14,6 +14,7 @@ import { Scattered } from "./Scattered";
 import { VoiceNote } from "./VoiceNote";
 import { EXEMPLO_TRANSCRICAO, CONFIRMACOES, RESPOSTAS, type Evento, type Conflito, type Confirmacao } from "./agent";
 import { horaCurta } from "./datas";
+import { later as after, cancel, wait } from "@/engine/clock";
 
 const W = 4100;
 const H = 1500;
@@ -77,16 +78,16 @@ export default function AgendaChapter({ onNext }: ChapterProps) {
   // terminou de marcar: o card do horário que encavala aparece com a câmera parada
   useEffect(() => {
     if (phase === "live" && semana.run.status === "done") {
-      const t = setTimeout(() => setPhase("conflito"), 1800);
-      return () => clearTimeout(t);
+      const t = after(() => setPhase("conflito"), 1800);
+      return () => cancel(t);
     }
   }, [phase, semana.run.status]);
 
   // o ultrassom anda para as 16h; depois, a Donna confirma com os clientes
   useEffect(() => {
     if (phase === "confirmando" && confirma.run.status === "idle") {
-      const t = setTimeout(() => startConfirma({ chapter: "agenda", options: { acao: "confirmacoes" }, demo: true }), 1100);
-      return () => clearTimeout(t);
+      const t = after(() => startConfirma({ chapter: "agenda", options: { acao: "confirmacoes" }, demo: true }), 1100);
+      return () => cancel(t);
     }
   }, [phase, confirma.run.status, startConfirma]);
 
@@ -96,7 +97,7 @@ export default function AgendaChapter({ onNext }: ChapterProps) {
     let vivo = true;
     (async () => {
       await stage.current?.goTo(FULL_SHOT);
-      await new Promise((r) => setTimeout(r, 3400));
+      await wait(3400);
       if (!vivo) return;
       await stage.current?.goTo(LIVE_SHOT);
       if (vivo) setPhase("scope");

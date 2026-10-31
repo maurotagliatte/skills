@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { IconBold, IconItalic, IconCurrencyReal, IconAlignLeft, IconTable, IconPercentage } from "@tabler/icons-react";
 import { usePlayback } from "@/engine/playback";
+import { every, cancel } from "@/engine/clock";
 
 /** Planilha genérica (sem marca) sendo digitada à mão, célula a célula, com um erro corrigido. */
 
@@ -61,8 +62,8 @@ export function Sheet({ playing }: { playing: boolean }) {
 
   useEffect(() => {
     if (!playing || paused) return;
-    const t = setInterval(() => setI((n) => Math.min(n + 1, frames.length - 1)), 52);
-    return () => clearInterval(t);
+    const t = every(() => setI((n) => Math.min(n + 1, frames.length - 1)), 52);
+    return () => cancel(t);
   }, [playing, paused, frames.length]);
 
   // valores de cada célula da linha nova até o quadro atual

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { IconPlayerPlayFilled, IconScissors, IconCheck } from "@tabler/icons-react";
 import { AgentRow, Chip, Cursor } from "@/kit";
 import type { Aula } from "./agent";
+import { every, cancel } from "@/engine/clock";
 
 const BRUTO = 42 * 60; // s
 /** trechos que a Donna corta (fração da gravação bruta) */
@@ -50,8 +51,8 @@ export function AulaView({ aula, step, agentDone, published, tw: TW = TW_PADRAO 
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!captions) return;
-    const id = setInterval(() => setTick((t) => t + 1), 2200);
-    return () => clearInterval(id);
+    const id = every(() => setTick((t) => t + 1), 2200);
+    return () => cancel(id);
   }, [captions]);
   const legenda = captions && legendas.length ? legendas[tick % legendas.length] : undefined;
   const caps = (aula.capitulos ?? []).filter((c) => c?.tempo && c?.titulo);

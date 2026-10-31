@@ -125,29 +125,65 @@ input, textarea { font: inherit; }
   .k-overlay[data-side="right"] .k-overlay-body > * { width: auto !important; max-width: 100%; }
 }
 
-.k-rotate-hint { display: none; }
-@media (max-width: 640px) and (orientation: portrait) {
-  .k-rotate-hint {
-    position: absolute;
-    z-index: 45;
-    top: calc(14px + env(safe-area-inset-top));
-    left: 50%;
-    translate: -50% 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 12px;
-    border-radius: 99px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid var(--border-dark);
-    color: var(--text-inv-2);
-    font-size: 12px;
-    white-space: nowrap;
-    pointer-events: none;
-    animation: k-hint-out 0.6s ease 7s forwards;
-  }
+
+/* ——— Reprodução: barra que anda, espera e pulso do botão pedido ——— */
+.k-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--k-red);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
 }
-@keyframes k-hint-out { to { opacity: 0; visibility: hidden; } }
+/* só o salto final (cartão de escopo) anima; durante o roteiro o valor já muda a cada quadro */
+.k-fill.k-full { transform: scaleX(1) !important; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.k-run {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 60%;
+  width: 40%;
+  overflow: hidden;
+}
+.k-run::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(235, 49, 2, 0.9), transparent);
+  animation: k-run 1.3s linear infinite;
+}
+@keyframes k-run { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.k-wait {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 99px;
+  background: var(--k-red);
+  animation: k-wait 1.4s ease-in-out infinite;
+}
+@keyframes k-wait { 0%, 100% { box-shadow: 0 0 0 0 rgba(235, 49, 2, 0.55); } 50% { box-shadow: 0 0 0 6px rgba(235, 49, 2, 0); } }
+
+/* o botão que a Donna está pedindo: um pulso discreto contínuo e um mais forte ao tocar fora */
+button[data-advance]:not(:disabled) { animation: k-ask 2.4s ease-in-out infinite; }
+@keyframes k-ask { 0%, 100% { box-shadow: 0 0 0 0 rgba(235, 49, 2, 0); } 50% { box-shadow: 0 0 0 6px rgba(235, 49, 2, 0.22); } }
+button[data-advance].k-nudge { animation: k-nudge 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes k-nudge {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(235, 49, 2, 0.6); }
+  35% { transform: scale(1.06); }
+  100% { transform: scale(1); box-shadow: 0 0 0 14px rgba(235, 49, 2, 0); }
+}
+
+/* esperando a Donna: o palco escurece um pouco (os cards e o cromo não) */
+.k-stage-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+[data-play="waiting"] .k-stage-dim { opacity: 1; }
 
 /* toque: alvos maiores na barra de capítulos */
 @media (pointer: coarse) {

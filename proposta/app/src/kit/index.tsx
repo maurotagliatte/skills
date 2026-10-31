@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type { Icon } from "@tabler/icons-react";
 import { IconArrowRight, IconPointerFilled, IconSearch, IconSparkles } from "@tabler/icons-react";
 import Noise from "./rb/Noise/Noise";
+import { useAsk } from "@/engine/playback";
 import s from "./kit.module.css";
 
 const cx = (...c: (string | false | undefined)[]) => c.filter(Boolean).join(" ");
@@ -224,8 +225,12 @@ export function Button({
   advance?: boolean | string;
 }) {
   const v = { primary: s.btnPrimary, ghost: s.btnGhost, light: s.btnLight, outline: s.btnOutline }[variant];
+  // botão de avanço ativo = a Donna está pedindo: a proposta espera por ele (e ele pulsa)
+  const ref = useRef<HTMLButtonElement>(null);
+  useAsk(ref, !!advance && !disabled);
   return (
     <button
+      ref={ref}
       className={cx(s.btn, v)}
       onClick={onClick}
       disabled={disabled}

@@ -14,6 +14,7 @@ import { LockScreen, type LockNotification } from "@/chapters/atendimento/LockSc
 import { Sheet } from "./Sheet";
 import { Contas, type EnvioCobranca } from "./Contas";
 import { EXEMPLOS, type Alerta, type Cobranca, type Comprovante } from "./agent";
+import { later as after, cancel } from "@/engine/clock";
 
 // a cobrança do Ferrador Silva, a mesma da cena
 const EXEMPLO = EXEMPLOS[0];
@@ -80,37 +81,37 @@ export default function ContasChapter({ onNext }: ChapterProps) {
   // terminou de lançar: o celular recebe o aviso na véspera; depois, a outra ponta (cobrar o cliente)
   useEffect(() => {
     if (phase === "live" && conta.run.status === "done") {
-      const t = setTimeout(async () => {
+      const t = after(async () => {
         setPhase("alerta");
         await stage.current?.goTo(ALERT_SHOT);
         setNoCelular(true);
       }, 1800);
-      return () => clearTimeout(t);
+      return () => cancel(t);
     }
     if (phase === "alerta" && noCelular) {
-      const t = setTimeout(async () => {
+      const t = after(async () => {
         setPhase("ida");
         startCobrar({ chapter: "contas", options: { acao: "cobranca" } });
         await stage.current?.goTo(COBRANCA_SHOT);
         setPhase("cobranca");
       }, 4600);
-      return () => clearTimeout(t);
+      return () => cancel(t);
     }
   }, [phase, conta.run.status, noCelular, startCobrar]);
 
   // enviada: o cartão de escopo vem depois de um respiro
   useEffect(() => {
     if (cobrancaEnvio === "enviando") {
-      const t = setTimeout(() => setCobrancaEnvio("enviada"), 1100);
-      return () => clearTimeout(t);
+      const t = after(() => setCobrancaEnvio("enviada"), 1100);
+      return () => cancel(t);
     }
     if (cobrancaEnvio === "enviada" && phase === "cobranca") {
-      const t = setTimeout(async () => {
+      const t = after(async () => {
         setPhase("ida");
         await stage.current?.goTo(LIVE_SHOT);
         setPhase("scope");
       }, 2400);
-      return () => clearTimeout(t);
+      return () => cancel(t);
     }
   }, [cobrancaEnvio, phase]);
 

@@ -2,10 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
-import { IconDeviceMobileRotated, IconPlayerPauseFilled, IconPlayerPlayFilled, IconLayoutList, IconX } from "@tabler/icons-react";
+import { IconPlayerPauseFilled, IconPlayerPlayFilled, IconLayoutList, IconX } from "@tabler/icons-react";
 import { chapters } from "@/chapters";
 import { BrandLogo } from "@/kit";
-import { PlaybackContext } from "./playback";
+import { PlaybackContext, onSceneProgress, setSceneProgress, type PlayState } from "./playback";
+import { setPaused as setClockPaused } from "./clock";
+
+/** Toques nisto não pausam: são controles (botões, abas, a pilha de modelos…). */
+const INTERACTIVE = "button, a, input, textarea, select, label, [role=slider], [role=tab], .stack-card, [data-interactive]";
 import { PASSAGE, TONE_BG, TransitionContext, type ChapterTransition, type Tone } from "./transition";
 
 /** Casca da proposta: cabeçalho, índice (barra + menu), teclado e a passagem entre capítulos. */
@@ -30,6 +34,41 @@ export function Proposal() {
   }, []);
   const [paused, setPaused] = useState(false);
   const [menu, setMenu] = useState(false);
+
+  // botões de avanço visíveis (a Donna pedindo): com algum, a proposta está esperando por ela
+  const asks = useRef(new Set<HTMLElement>()).current;
+  const [askCount, setAskCount] = useState(0);
+  const registerAsk = useCallback(
+    (el: HTMLElement) => {
+      asks.add(el);
+      setAskCount(asks.size);
+      return () => {
+        asks.delete(el);
+        setAskCount(asks.size);
+      };
+    },
+    [asks],
+  );
+  const state: PlayState = paused ? "paused" : askCount > 0 ? "waiting" : "playing";
+  useEffect(() => setClockPaused(paused), [paused]);
+
+  // tocou fora do botão pedido: o botão reage (nunca "nada acontece")
+  const nudge = useCallback(() => {
+    asks.forEach((el) => {
+      el.classList.remove("k-nudge");
+      void el.offsetWidth;
+      el.classList.add("k-nudge");
+    });
+  }, [asks]);
+
+  // pausar/retomar mostra um ícone rápido no centro
+  const [flash, setFlash] = useState<{ n: number; paused: boolean } | null>(null);
+  const togglePause = useCallback(() => {
+    setPaused((p) => {
+      setFlash((f) => ({ n: (f?.n ?? 0) + 1, paused: !p }));
+      return !p;
+    });
+  }, []);
   const chapter = chapters[index];
 
   // objeto estável acima do AnimatePresence: o capítulo que sai lê a direção atual
@@ -49,6 +88,7 @@ export function Proposal() {
         passage.dir = next > cur ? 1 : -1;
         // capítulo sem Stage (em produção) volta ao escuro; o Stage do próximo ajusta se for claro
         setTone("dark");
+        setSceneProgress(0);
         setIndex(next);
       }
       setMenu(false);
@@ -64,18 +104,35 @@ export function Proposal() {
       if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && (e.target as HTMLElement) !== document.body) return;
       if (e.key === " ") {
         e.preventDefault();
-        setPaused((p) => !p);
+        togglePause();
       } else if (e.key === "ArrowRight") go(index + 1);
       else if (e.key === "ArrowLeft") go(index - 1);
       else if (e.key === "Escape") setMenu(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [index, go]);
+  }, [index, go, togglePause]);
+
+  // toque no palco: rodando → pausa/retoma; esperando → o botão pedido pulsa. Arrastar/rolar não conta.
+  const down = useRef<{ x: number; y: number } | null>(null);
+  const onPointerDown = (e: React.PointerEvent) => {
+    down.current = { x: e.clientX, y: e.clientY };
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    const d = down.current;
+    down.current = null;
+    if (!d || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10 || menu) return;
+    const t = e.target as HTMLElement;
+    if (t.closest(INTERACTIVE)) return;
+    if (state === "waiting") nudge();
+    else if (!t.closest(".k-overlay")) togglePause();
+  };
 
   const light = tone === "light";
   const ink2 = light ? "var(--text-2)" : "var(--text-inv-2)";
-  const playback = useMemo(() => ({ paused }), [paused]);
+  const playback = useMemo(() => ({ paused, state, registerAsk }), [paused, state, registerAsk]);
+  // o cartão "Isso entra no projeto" fecha o capítulo: o trecho da barra fica cheio
+  const closing = askCount > 0 && [...asks].some((el) => el.dataset.advance === "chapter");
 
   return (
     <PlaybackContext.Provider value={playback}>
@@ -83,6 +140,9 @@ export function Proposal() {
         <div
           data-chapter={chapter.id}
           data-tone={tone}
+          data-play={state}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
           style={{ position: "fixed", inset: 0, background: TONE_BG[tone], transition: "background-color .6s var(--ease-cam)", overflow: "hidden" }}
         >
           <AnimatePresence initial={false}>
@@ -138,9 +198,6 @@ export function Proposal() {
               </motion.span>
             </AnimatePresence>
             <div style={{ display: "flex", gap: 8, pointerEvents: "auto" }}>
-              <RoundBtn light={light} label={paused ? "Continuar" : "Pausar"} onClick={() => setPaused((p) => !p)}>
-                {paused ? <IconPlayerPlayFilled size={15} /> : <IconPlayerPauseFilled size={15} />}
-              </RoundBtn>
               <RoundBtn light={light} label="Capítulos" onClick={() => setMenu(true)}>
                 <IconLayoutList size={16} />
               </RoundBtn>
@@ -159,23 +216,78 @@ export function Proposal() {
                 style={{ flex: 1, height: "100%", padding: 0, border: 0, background: "none", display: "flex", alignItems: "flex-end" }}
               >
                 <span
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    height: 2,
-                    background: i <= index ? "var(--k-red)" : light ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.08)",
-                    transition: "background-color .4s",
-                  }}
-                />
+                  className="k-seg"
+                  style={{ display: "block", position: "relative", width: "100%", height: 3, background: i < index ? "var(--k-red)" : light ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.1)" }}
+                >
+                  {i === index && <Fill key={c.id} state={state} closing={closing} />}
+                </span>
               </button>
             ))}
           </nav>
 
-          {/* celular em pé: a proposta é pensada na horizontal (some sozinho; só aparece em retrato) */}
-          <div className="k-rotate-hint" role="note">
-            <IconDeviceMobileRotated size={16} />
-            Gire o celular para ver melhor
-          </div>
+          {/* pausou/retomou: ícone rápido no centro */}
+          <AnimatePresence>
+            {flash && (
+              <motion.div
+                key={flash.n}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.15 }}
+                transition={{ duration: 0.22 }}
+                onAnimationComplete={() => setFlash((f) => (f?.n === flash.n ? null : f))}
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  translate: "-50% -50%",
+                  zIndex: 45,
+                  width: 72,
+                  height: 72,
+                  borderRadius: 99,
+                  display: "grid",
+                  placeItems: "center",
+                  background: "rgba(5,5,5,.55)",
+                  color: "#fff",
+                  pointerEvents: "none",
+                }}
+              >
+                {flash.paused ? <IconPlayerPauseFilled size={28} /> : <IconPlayerPlayFilled size={28} />}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* pausado: fica dito na tela até ela retomar */}
+          <AnimatePresence>
+            {paused && (
+              <motion.div
+                role="status"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  bottom: "calc(24px + env(safe-area-inset-bottom))",
+                  translate: "-50% 0",
+                  zIndex: 45,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 14px",
+                  borderRadius: 99,
+                  background: "rgba(5,5,5,.72)",
+                  border: "1px solid var(--border-dark)",
+                  color: "var(--text-inv)",
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                }}
+              >
+                <IconPlayerPauseFilled size={13} /> Pausado · toque para continuar
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
             {menu && (
@@ -248,6 +360,41 @@ function ChapterLayer({ children }: { children: React.ReactNode }) {
     >
       {children}
     </motion.div>
+  );
+}
+
+/**
+ * Preenchimento do trecho do capítulo atual. Durante o roteiro de câmera ele anda com o roteiro
+ * (até 60% do trecho); depois, enquanto a proposta roda sem duração conhecida, um brilho corre;
+ * quando a Donna pede, para com um ponto pulsando; no cartão de escopo, fica cheio.
+ */
+const SCENE_SHARE = 0.6;
+function Fill({ state, closing }: { state: PlayState; closing: boolean }) {
+  const bar = useRef<HTMLSpanElement>(null);
+  const [known, setKnown] = useState(true);
+  const max = useRef(0);
+  const last = useRef(-1);
+  useEffect(
+    () =>
+      onSceneProgress((p) => {
+        const el = bar.current;
+        if (!el) return;
+        if (p !== null) max.current = Math.max(max.current, p);
+        setKnown(p !== null);
+        const v = p === null ? SCENE_SHARE : max.current * SCENE_SHARE;
+        // escreve só quando muda o bastante para aparecer (menos trabalho por quadro)
+        if (Math.abs(v - last.current) < 0.002 && p !== null) return;
+        last.current = v;
+        el.style.transform = `scaleX(${(p === null ? SCENE_SHARE : max.current * SCENE_SHARE).toFixed(4)})`;
+      }),
+    [],
+  );
+  return (
+    <>
+      <span ref={bar} className={closing ? "k-fill k-full" : "k-fill"} />
+      {state === "playing" && !known && !closing && <span className="k-run" />}
+      {state === "waiting" && <span className="k-wait" style={{ left: closing ? "100%" : `${SCENE_SHARE * 100}%` }} />}
+    </>
   );
 }
 

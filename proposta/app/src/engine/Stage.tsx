@@ -3,7 +3,7 @@
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef } from "react";
 import { useIsPresent } from "motion/react";
 import gsap from "gsap";
-import { usePlayback } from "./playback";
+import { setSceneProgress, usePlayback } from "./playback";
 import { PASSAGE, TONE_BG, prefersReducedMotion, useChapterTransition, type Tone } from "./transition";
 
 /** Um enquadramento da câmera: centro (x, y) no mundo e zoom relativo ao "fit" 1440×900. */
@@ -156,6 +156,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage(
     const s0 = shots[0];
     const offset = entering ? { x: s0.x - (passage.dir * DESIGN_W * 0.34) / s0.zoom, y: s0.y, zoom: s0.zoom * 0.95 } : null;
     if (!running) {
+      setSceneProgress(null);
       if (offset) {
         Object.assign(cam.current, offset);
         apply();
@@ -163,7 +164,15 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage(
       }
       return;
     }
-    const t = gsap.timeline({ onComplete: () => cbs.current.onEnd?.() });
+    const reduce = prefersReducedMotion();
+    const t = gsap.timeline({
+      // a barra do capítulo anda com o roteiro; depois dele, a duração é desconhecida
+      onUpdate: () => setSceneProgress(t.progress()),
+      onComplete: () => {
+        setSceneProgress(null);
+        cbs.current.onEnd?.();
+      },
+    });
     shots.forEach((shot, i) => {
       if (shot.cue) t.call(() => cbs.current.onCue?.(shot.cue!));
       if (i === 0) {
@@ -185,7 +194,11 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage(
           onUpdate: apply,
         });
       }
-      if (shot.hold) t.to({}, { duration: shot.hold });
+      // parada sem congelar: a câmera continua se aproximando bem devagar
+      if (shot.hold) {
+        if (reduce) t.to({}, { duration: shot.hold });
+        else t.to(cam.current, { zoom: shot.zoom * (1 + 0.012 * Math.min(shot.hold, 4)), duration: shot.hold, ease: "sine.inOut", onUpdate: apply });
+      }
     });
     tl.current = t;
     return () => {
@@ -224,6 +237,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage(
       >
         {children}
       </div>
+      <div className="k-stage-dim" />
     </div>
   );
 });

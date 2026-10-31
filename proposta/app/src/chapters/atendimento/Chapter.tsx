@@ -31,6 +31,7 @@ import { Galeria, type GalCard, type Status } from "./Galeria";
 import { FolhaBilingue, FolhaClinica, FolhaEditorial, FolhaHoje, FolhaWhatsApp, type R } from "./Folha";
 import { EXEMPLO_TRANSCRICAO, type Pedido } from "./agent";
 import css from "./atendimento.module.css";
+import { later as after, every, cancel } from "@/engine/clock";
 
 const W = 4700;
 const H = 1500;
@@ -74,10 +75,10 @@ type PedidoCard = { id: string; pedido: Pedido; nome: string; sub: string; rel?:
 
 /** setTimeout que só é cancelado quando o capítulo sai (trocas de estado não cancelam a etapa seguinte). */
 function useLater() {
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  const timers = useRef<number[]>([]);
+  useEffect(() => () => timers.current.forEach(cancel), []);
   return useCallback((ms: number, fn: () => void) => {
-    timers.current.push(setTimeout(fn, ms));
+    timers.current.push(after(fn, ms));
   }, []);
 }
 
@@ -471,8 +472,8 @@ function Gravando() {
     // liga a pílula de voz do React Bits (onda simulada; a gravação real fica na pausa)
     const btn = ref.current?.querySelector<HTMLButtonElement>("button.voice-pill");
     btn?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    const t = setInterval(() => setS((v) => v + 1), 1000);
-    return () => clearInterval(t);
+    const t = every(() => setS((v) => v + 1), 1000);
+    return () => cancel(t);
   }, []);
   return (
     <motion.div ref={ref} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className={css.activity}>
