@@ -166,6 +166,10 @@ triplicaria o trabalho e o risco sem ganho para quem assiste.
    celular continuam usando o palco atual em retrato (comportamento de hoje) até ganharem a sua.
 3. Demais capítulos no celular, um a um.
 
+Publicação (decisão do Mauro, 31/10): **direto no link oficial, por etapas**. Cada etapa só é
+enviada quando estiver completa e verificada (build, QA em retrato/paisagem/desktop), já que todo
+envio ao branch publica no `khard-content`.
+
 ## Como saber que deu certo
 
 - Roteiro de QA em iPhone (retrato) e desktop: em cada segundo da proposta, ou a barra está andando
